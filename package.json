@@ -1,0 +1,54 @@
+{
+  "name": "termora",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Browser-based access to your local terminal and Claude Code from any device",
+  "license": "MIT",
+  "author": "termora contributors",
+  "homepage": "https://termora.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rud-lab/termora.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rud-lab/termora/issues"
+  },
+  "keywords": [
+    "terminal",
+    "remote-terminal",
+    "phone-terminal",
+    "claude-code",
+    "xterm",
+    "pwa",
+    "node-pty",
+    "websocket",
+    "ngrok",
+    "developer-tools"
+  ],
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --filter=@termora/agent --filter=@termora/web --parallel --log-prefix=none --log-order=stream --verbosity=0",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "postinstall": "node scripts/fix-node-pty.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "turbo": "^2.3.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "npm@10.8.0"
+}

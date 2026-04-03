@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-termora-gold: #D4AF37;
+  --color-termora-bg: #060606;
+  --color-termora-surface: #0a0a0a;
+  --color-termora-border: #1a1a1a;
+}
+
+@keyframes notch-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-termora-bg);
+  font-family:
+    'SF Mono',
+    'Fira Code',
+    'JetBrains Mono',
+    ui-monospace,
+    monospace;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* PWA standalone: push content below iPhone notch/Dynamic Island */
+@media (display-mode: standalone) {
+  #root {
+    top: env(safe-area-inset-top);
+  }
+}
+
+/* ── Keyboard skin CSS custom properties ─────────────────────────────────── */
+/* Set by useSkin() via data-skin attribute on <html> */
+
+[data-skin],
+[data-skin="macbook-silver"] {
+  --kbd-bg: #141416;
+  --key-face: #1c1c1e;
+  --key-border: #2e2e30;
+  --key-side: #0e0e0f;
+  --key-label: #8a8a8e;
+  --key-label-shift: #555558;
+  --key-hover: #242426;
+  --key-active: #161618;
+}
+
+[data-skin="ios-terminal"] {
+  --kbd-bg: #1b1b1d;
+  --key-face: #2c2c2e;
+  --key-border: #3a3a3c;
+  --key-side: #161618;
+  --key-label: #ffffff;
+  --key-label-shift: #8e8e93;
+  --key-hover: #3a3a3c;
+  --key-active: #1c1c1e;
+}
+
+[data-skin="gamer-rgb"] {
+  --kbd-bg: #0a0010;
+  --key-face: #0d001a;
+  --key-border: #2a0050;
+  --key-side: #050008;
+  --key-label: #ffffff;
+  --key-label-shift: #dddddd;
+  --key-hover: #1a0030;
+  --key-active: #0d001a;
+}
+
+[data-skin="custom-painted"] {
+  --kbd-bg: #0f0a00;
+  --key-face: #1a1200;
+  --key-border: #2d2000;
+  --key-side: #0a0800;
+  --key-label: #ccaa44;
+  --key-label-shift: #aa8833;
+  --key-hover: #231800;
+  --key-active: #0f0d00;
+}
+
+[data-skin="amber-retro"] {
+  --kbd-bg: #0a0600;
+  --key-face: #1a1000;
+  --key-border: #3d2800;
+  --key-side: #0a0700;
+  --key-label: #c87700;
+  --key-label-shift: #996000;
+  --key-hover: #221500;
+  --key-active: #150e00;
+}
+
+[data-skin="ice-white"] {
+  --kbd-bg: #e8eaed;
+  --key-face: #f5f6f8;
+  --key-border: #d0d2d5;
+  --key-side: #b8babe;
+  --key-label: #2a2a2a;
+  --key-label-shift: #555555;
+  --key-hover: #ffffff;
+  --key-active: #e8eaed;
+}
+
+/* ── Gamer RGB animation ──────────────────────────────────────────────────── */
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes rgb-cycle {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+[data-skin="gamer-rgb"] [data-kbd] {
+  animation: rgb-cycle 4s linear infinite;
+}
+
+/* Staggered hue offset per key position */
+[data-skin="gamer-rgb"] [data-key]:nth-child(1)  { --hue-offset: 0deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(2)  { --hue-offset: 20deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(3)  { --hue-offset: 40deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(4)  { --hue-offset: 60deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(5)  { --hue-offset: 80deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(6)  { --hue-offset: 100deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(7)  { --hue-offset: 120deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(8)  { --hue-offset: 140deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(9)  { --hue-offset: 160deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(10) { --hue-offset: 180deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(11) { --hue-offset: 200deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(12) { --hue-offset: 220deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(13) { --hue-offset: 240deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(14) { --hue-offset: 260deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(15) { --hue-offset: 280deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(16) { --hue-offset: 300deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(17) { --hue-offset: 320deg; }
+[data-skin="gamer-rgb"] [data-key]:nth-child(18) { --hue-offset: 340deg; }
