@@ -12,7 +12,7 @@ body:
     id: os
     attributes:
       label: Operating System
-      description: What OS are you running clsh on?
+      description: What OS are you running termora on?
       placeholder: "e.g., macOS 15.2, Ubuntu 24.04"
     validations:
       required: true

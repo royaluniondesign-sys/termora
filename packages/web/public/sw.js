@@ -1,5 +1,5 @@
-// clsh service worker — caches app shell for offline/tunnel-down support
-const CACHE = 'clsh-v1';
+// termora service worker — caches app shell for offline/tunnel-down support
+const CACHE = 'termora-v1';
 
 self.addEventListener('install', (e) => {
   // Cache the app shell immediately

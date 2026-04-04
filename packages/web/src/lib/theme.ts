@@ -3,7 +3,7 @@ import type { ITheme } from '@xterm/xterm';
 /**
  * termora terminal theme — dark background with orange cursor accent.
  */
-export const CLSH_THEME: ITheme = {
+export const TERMORA_THEME: ITheme = {
   background: '#060606',
   foreground: '#d0d0d0',
   cursor: '#f97316',

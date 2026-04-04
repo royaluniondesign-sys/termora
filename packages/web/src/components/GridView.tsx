@@ -41,7 +41,7 @@ export function GridView({
               letterSpacing: '0.15em',
             }}
           >
-            CLSH
+            TERMORA
           </span>
           <span
             className="rounded-full px-2"

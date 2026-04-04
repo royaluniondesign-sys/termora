@@ -4,7 +4,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebglAddon } from '@xterm/addon-webgl';
 import '@xterm/xterm/css/xterm.css';
 
-import { CLSH_THEME } from '../lib/theme';
+import { TERMORA_THEME } from '../lib/theme';
 import { captureColoredScreen } from '../lib/captureTerminalScreen';
 
 interface UseTerminalReturn {
@@ -48,7 +48,7 @@ export function useTerminal(
       cursorBlink: true,
       fontFamily: '"JetBrains Mono", monospace',
       fontSize: 12,
-      theme: CLSH_THEME,
+      theme: TERMORA_THEME,
       allowProposedApi: true,
       convertEol: true,
       scrollback: 2000,

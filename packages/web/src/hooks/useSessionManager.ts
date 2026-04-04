@@ -3,7 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { TerminalWSClient, type ConnectionStatus } from '../lib/ws-client';
 import { MessageBus } from '../lib/message-bus';
 import { captureColoredScreen } from '../lib/captureTerminalScreen';
-import { CLSH_THEME } from '../lib/theme';
+import { TERMORA_THEME } from '../lib/theme';
 import type { Session } from '../lib/types';
 import type { ServerMessage } from '../lib/protocol';
 
@@ -67,7 +67,7 @@ export function useSessionManager(
         cols: 80,
         rows: 24,
         allowProposedApi: true,
-        theme: CLSH_THEME,
+        theme: TERMORA_THEME,
       });
       headlessTerminals.current.set(sessionId, term);
     }

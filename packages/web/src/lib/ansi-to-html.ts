@@ -1,6 +1,6 @@
 /**
  * Converts raw terminal output (with ANSI escape sequences) to HTML spans
- * with inline color styles. Matches the CLSH terminal theme colors.
+ * with inline color styles. Matches the TERMORA terminal theme colors.
  *
  * Handles:
  * - SGR codes (colors, bold)
@@ -9,7 +9,7 @@
  * - Strips cursor movement and other CSI sequences gracefully
  */
 
-// Colors matching CLSH_THEME in theme.ts
+// Colors matching TERMORA_THEME in theme.ts
 const ANSI_COLORS: Record<number, string> = {
   30: '#1a1a1a', 31: '#f87171', 32: '#4ade80', 33: '#fbbf24',
   34: '#60a5fa', 35: '#c084fc', 36: '#22d3ee', 37: '#d0d0d0',
