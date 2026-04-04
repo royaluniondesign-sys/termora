@@ -31,16 +31,8 @@ export function GridView({
         style={{ height: 48, flexShrink: 0, borderBottom: '1px solid #3a3835' }}
       >
         <div className="flex items-center gap-2">
-          {/* Logo mark */}
-          <div style={{
-            width: 26, height: 26, borderRadius: 7,
-            background: 'linear-gradient(145deg, #d97757, #c46a4d)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" stroke="#141413" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
-            </svg>
-          </div>
+          {/* Chakana logo */}
+          <img src="/termora-logo.svg" alt="termora" style={{ width: 28, height: 28 }} />
           <span style={{ fontSize: 14, fontWeight: 700, color: '#faf9f5', letterSpacing: -0.3 }}>
             termora
           </span>

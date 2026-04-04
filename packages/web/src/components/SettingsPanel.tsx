@@ -164,7 +164,8 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
         )}
 
         {/* Footer */}
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
+        <div style={{ marginTop: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <img src="/termora-logo.svg" alt="termora" style={{ width: 20, height: 20, opacity: 0.5 }} />
           <span style={{ fontSize: 9, color: '#4a4845' }}>
             termora v0.1.0 — your machine, in your hands
           </span>
