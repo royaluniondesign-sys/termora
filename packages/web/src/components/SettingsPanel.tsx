@@ -61,7 +61,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
         style={{
           width: '100%',
           maxWidth: 480,
-          background: '#111',
+          background: '#1e1d1b',
           borderTop: '1px solid #2a2a2a',
           borderRadius: '16px 16px 0 0',
           padding: '16px 16px 32px',
@@ -70,7 +70,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
       >
         {/* Handle bar */}
         <div className="flex justify-center" style={{ marginBottom: 12 }}>
-          <div style={{ width: 36, height: 4, background: '#333', borderRadius: 2 }} />
+          <div style={{ width: 36, height: 4, background: '#4a4845', borderRadius: 2 }} />
         </div>
 
         {/* Header */}
@@ -83,7 +83,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
             style={{
               background: 'none',
               border: 'none',
-              color: '#555',
+              color: '#b0aea5',
               fontSize: 16,
               cursor: 'pointer',
               padding: 0,
@@ -101,7 +101,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
           <div
             style={{
               flex: 1,
-              background: '#161616',
+              background: '#1e1d1b',
               border: '1px solid #222',
               borderRadius: 8,
               padding: '8px 12px',
@@ -109,12 +109,12 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
             }}
           >
             <div style={{ fontSize: 18, fontWeight: 700, color: '#d97757' }}>{sessionCount}</div>
-            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>SESSIONS</div>
+            <div style={{ fontSize: 9, color: '#b0aea5', marginTop: 2 }}>SESSIONS</div>
           </div>
           <div
             style={{
               flex: 1,
-              background: '#161616',
+              background: '#1e1d1b',
               border: '1px solid #222',
               borderRadius: 8,
               padding: '8px 12px',
@@ -124,12 +124,12 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
             <div style={{ fontSize: 18, fontWeight: 700, color: '#28c840' }}>
               &#x25CF;
             </div>
-            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>CONNECTED</div>
+            <div style={{ fontSize: 9, color: '#b0aea5', marginTop: 2 }}>CONNECTED</div>
           </div>
           <div
             style={{
               flex: 1,
-              background: '#161616',
+              background: '#1e1d1b',
               border: '1px solid #222',
               borderRadius: 8,
               padding: '8px 12px',
@@ -137,7 +137,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
             }}
           >
             <div style={{ fontSize: 18, fontWeight: 700, color: '#ccc' }}>v0.1</div>
-            <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>VERSION</div>
+            <div style={{ fontSize: 9, color: '#b0aea5', marginTop: 2 }}>VERSION</div>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
                 gap: 12,
                 width: '100%',
                 padding: '10px 12px',
-                background: '#161616',
+                background: '#1e1d1b',
                 border: '1px solid #222',
                 borderRadius: 8,
                 cursor: 'pointer',
@@ -164,7 +164,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
               <span style={{ fontSize: 20 }}>{cmd.icon}</span>
               <div>
                 <div style={{ fontSize: 12, color: '#ccc', fontWeight: 600 }}>{cmd.label}</div>
-                <div style={{ fontSize: 10, color: '#555', marginTop: 1 }}>{cmd.description}</div>
+                <div style={{ fontSize: 10, color: '#b0aea5', marginTop: 1 }}>{cmd.description}</div>
               </div>
             </button>
           ))}
@@ -187,7 +187,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
             <div
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: '#111',
+                background: '#1e1d1b',
                 border: '1px solid #2a2a2a',
                 borderRadius: 12,
                 padding: 24,
@@ -235,7 +235,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
 
         {/* Footer */}
         <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <span style={{ fontSize: 9, color: '#333' }}>
+          <span style={{ fontSize: 9, color: '#4a4845' }}>
             termora v0.1.0 — your mac, in your pocket
           </span>
         </div>

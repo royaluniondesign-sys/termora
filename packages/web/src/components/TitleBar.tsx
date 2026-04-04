@@ -65,7 +65,7 @@ export function TitleBar({
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: 12,
                 color: '#ccc',
-                background: '#161616',
+                background: '#1e1d1b',
                 border: '1px solid #d97757',
                 borderRadius: 3,
                 padding: '2px 6px',
@@ -143,7 +143,7 @@ export function TitleBar({
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#555',
+                color: '#b0aea5',
                 cursor: 'pointer',
                 padding: 0,
                 fontSize: 11,
@@ -166,10 +166,10 @@ export function TitleBar({
           style={{
             width: 32,
             height: 32,
-            background: '#161616',
+            background: '#1e1d1b',
             border: '1px solid #2a2a2a',
             borderRadius: 6,
-            color: '#666',
+            color: '#b0aea5',
             fontSize: 14,
             cursor: 'pointer',
           }}
@@ -184,10 +184,10 @@ export function TitleBar({
             style={{
               width: 32,
               height: 32,
-              background: '#161616',
+              background: '#1e1d1b',
               border: '1px solid #2a2a2a',
               borderRadius: 6,
-              color: '#666',
+              color: '#b0aea5',
               fontSize: 16,
               cursor: 'pointer',
             }}

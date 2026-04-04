@@ -9,7 +9,7 @@ export function TabBar({ session }: TabBarProps) {
     <div
       style={{
         height: 36,
-        background: '#000',
+        background: '#141413',
         borderBottom: '1px solid #282725',
         display: 'flex',
         alignItems: 'center',
@@ -61,7 +61,7 @@ export function TabBar({ session }: TabBarProps) {
           style={{
             fontFamily: '"JetBrains Mono", monospace',
             fontSize: 10,
-            color: '#444',
+            color: '#78756f',
           }}
         >
           remote

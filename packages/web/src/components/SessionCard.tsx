@@ -14,7 +14,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
   const badgeStyle: React.CSSProperties =
     session.status === 'run'
       ? { background: 'rgba(0,255,135,0.15)', color: '#d97757' }
-      : { background: 'rgba(100,100,100,0.2)', color: '#666' };
+      : { background: 'rgba(100,100,100,0.2)', color: '#b0aea5' };
 
   const handleDeleteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,7 +41,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
         aspectRatio: '1 / 1.18',
         background: isActive
           ? 'linear-gradient(135deg, rgba(0,255,135,0.05), #111111)'
-          : '#111111',
+          : '#1e1d1b',
         borderRadius: 10,
         border: isActive ? '1px solid #d97757' : '1px solid #222222',
         boxShadow: isActive ? '0 0 0 1px #d97757' : 'none',
@@ -83,7 +83,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
           className="ml-1 truncate"
           style={{
             fontSize: 10,
-            color: '#666',
+            color: '#b0aea5',
             fontFamily: 'JetBrains Mono, monospace',
             flex: 1,
           }}
@@ -207,7 +207,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
                 background: '#282725',
                 border: '1px solid #333',
                 borderRadius: 4,
-                color: '#666',
+                color: '#b0aea5',
                 fontSize: 11,
                 fontFamily: 'JetBrains Mono, monospace',
                 padding: '4px 14px',

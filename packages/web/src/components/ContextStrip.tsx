@@ -35,7 +35,7 @@ export function ContextStrip({ onKey }: ContextStripProps) {
     <div
       style={{
         height: 48,
-        background: '#0d0d0d',
+        background: '#141413',
         borderTop: '1px solid #282725',
         display: 'flex',
         alignItems: 'center',
@@ -57,10 +57,10 @@ export function ContextStrip({ onKey }: ContextStripProps) {
             height: 28,
             width: BASE_WIDTH * key.widthMultiplier,
             flexShrink: 0,
-            background: key.accent ? 'rgba(255, 95, 87, 0.2)' : '#161616',
+            background: key.accent ? 'rgba(255, 95, 87, 0.2)' : '#1e1d1b',
             border: '1px solid #2a2a2a',
             borderRadius: 4,
-            color: key.accent ? '#ff5f57' : '#666',
+            color: key.accent ? '#ff5f57' : '#b0aea5',
             fontFamily: '"JetBrains Mono", monospace',
             fontSize: 9,
             cursor: 'pointer',

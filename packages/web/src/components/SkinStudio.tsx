@@ -89,7 +89,7 @@ export default function SkinStudio({
         </span>
         <span
           style={{
-            color: '#555555',
+            color: '#b0aea5',
             fontSize: 12,
             fontFamily: "'JetBrains Mono', monospace",
           }}
@@ -99,13 +99,13 @@ export default function SkinStudio({
       </div>
 
       {/* ── Live Preview ────────────────────────────────────────── */}
-      <div style={{ background: '#111111', padding: 16, flexShrink: 0 }}>
+      <div style={{ background: '#1e1d1b', padding: 16, flexShrink: 0 }}>
         <div
           style={{
             fontSize: 10,
             textTransform: 'uppercase' as const,
             letterSpacing: '0.1em',
-            color: '#444444',
+            color: '#78756f',
             marginBottom: 12,
             fontFamily: "'JetBrains Mono', monospace",
           }}
@@ -126,7 +126,7 @@ export default function SkinStudio({
             fontSize: 10,
             textTransform: 'uppercase' as const,
             letterSpacing: '0.1em',
-            color: '#444444',
+            color: '#78756f',
             marginBottom: 12,
             fontFamily: "'JetBrains Mono', monospace",
           }}
@@ -231,7 +231,7 @@ function SkinCard({
     <button
       onClick={() => onSelect(skinId)}
       style={{
-        background: '#111111',
+        background: '#1e1d1b',
         border: selected ? '1px solid #d97757' : '1px solid #222222',
         borderRadius: 12,
         overflow: 'hidden',
@@ -308,7 +308,7 @@ function SkinCard({
         </div>
         <div
           style={{
-            color: '#555555',
+            color: '#b0aea5',
             fontSize: 11,
             fontFamily: "'JetBrains Mono', monospace",
           }}

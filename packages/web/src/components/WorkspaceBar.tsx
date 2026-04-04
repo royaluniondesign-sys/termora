@@ -16,7 +16,7 @@ export function WorkspaceBar({
       className="flex items-center gap-0 overflow-x-auto px-2"
       style={{
         height: 32,
-        background: '#000',
+        background: '#141413',
         borderTop: '1px solid #282725',
         scrollbarWidth: 'none',
         flexShrink: 0,
@@ -35,7 +35,7 @@ export function WorkspaceBar({
               fontFamily: 'JetBrains Mono, monospace',
               fontWeight: isActive ? 700 : 400,
               background: isActive ? '#d97757' : 'transparent',
-              color: isActive ? '#000' : '#555',
+              color: isActive ? '#141413' : '#b0aea5',
               borderRadius: isActive ? 4 : 0,
               border: 'none',
               cursor: 'pointer',

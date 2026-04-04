@@ -20,14 +20,14 @@ export function NewSessionCard({ onCreateSession }: NewSessionCardProps) {
         aspectRatio: '1 / 1.18',
         background: 'transparent',
         borderRadius: 10,
-        border: `1px dashed ${accent ?? '#333'}`,
+        border: `1px dashed ${accent ?? '#4a4845'}`,
         cursor: 'pointer',
       }}
     >
       <span
         style={{
           fontSize: 24,
-          color: accent ?? '#555',
+          color: accent ?? '#b0aea5',
           lineHeight: 1,
         }}
       >
@@ -36,7 +36,7 @@ export function NewSessionCard({ onCreateSession }: NewSessionCardProps) {
       <span
         style={{
           fontSize: 11,
-          color: accent ?? '#444',
+          color: accent ?? '#78756f',
           fontFamily: 'JetBrains Mono, monospace',
           marginTop: 4,
         }}
