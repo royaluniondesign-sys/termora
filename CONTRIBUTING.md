@@ -115,6 +115,15 @@ Open a [GitHub issue](https://github.com/rud-lab/termora/issues/new?template=fea
 - **GitHub Issues**: For bugs and feature requests
 - **Discord**: For questions and discussion (link in README)
 
+## Sponsorship
+
+If you find termora useful, consider supporting the project:
+
+- [Buy me a coffee](https://buymeacoffee.com/rudlab)
+- [Sponsor on GitHub](https://github.com/sponsors/royaluniondesign-sys)
+
+Sponsors are recognized in [SPONSORS.md](./SPONSORS.md). Every contribution helps keep the project maintained and evolving.
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.

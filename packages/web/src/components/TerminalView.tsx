@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTerminal } from '../hooks/useTerminal';
 import { TitleBar } from './TitleBar';
+import { TouchActionsBar } from './TouchActionsBar';
 import { ContextStrip } from './ContextStrip';
 import { MacBookKeyboard } from './MacBookKeyboard';
 import { IOSKeyboard } from './IOSKeyboard';
@@ -127,6 +128,43 @@ export function TerminalView({
     onBack(captureScreen());
   }, [onBack, captureScreen]);
 
+  // Touch actions: clipboard operations and helpers
+  const handleTouchAction = useCallback(
+    (action: 'select' | 'cut' | 'copy' | 'paste' | 'tab' | 'history') => {
+      switch (action) {
+        case 'select':
+          terminal?.selectAll();
+          break;
+        case 'copy':
+          if (terminal?.hasSelection()) {
+            void navigator.clipboard.writeText(terminal.getSelection());
+          }
+          break;
+        case 'cut':
+          if (terminal?.hasSelection()) {
+            void navigator.clipboard.writeText(terminal.getSelection());
+            terminal.clearSelection();
+          }
+          break;
+        case 'paste':
+          void navigator.clipboard.readText().then((text) => {
+            if (text) {
+              wsClient?.send({ type: 'stdin', sessionId: session.id, data: text });
+            }
+          });
+          break;
+        case 'tab':
+          wsClient?.send({ type: 'stdin', sessionId: session.id, data: '\t' });
+          break;
+        case 'history':
+          // Send up arrow to cycle through shell history
+          wsClient?.send({ type: 'stdin', sessionId: session.id, data: '\x1b[A' });
+          break;
+      }
+    },
+    [terminal, wsClient, session.id],
+  );
+
   return (
     <div
       style={{
@@ -159,6 +197,7 @@ export function TerminalView({
         }}
       />
 
+      <TouchActionsBar onAction={handleTouchAction} />
       <ContextStrip onKey={handleKey} />
       {skin === 'ios-terminal' ? (
         <IOSKeyboard onKey={handleKey} skin={skin} perKeyColors={perKeyColors} />
