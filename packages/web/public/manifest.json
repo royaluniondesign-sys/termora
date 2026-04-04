@@ -4,8 +4,8 @@
   "description": "Your terminal, in your pocket",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060606",
-  "theme_color": "#060606",
+  "background_color": "#141413",
+  "theme_color": "#141413",
   "icons": [
     {
       "src": "/icon-192.png",

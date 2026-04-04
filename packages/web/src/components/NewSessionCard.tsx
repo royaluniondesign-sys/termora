@@ -7,7 +7,7 @@ interface NewSessionCardProps {
 export function NewSessionCard({ onCreateSession }: NewSessionCardProps) {
   const [hovered, setHovered] = useState(false);
 
-  const accent = hovered ? '#f97316' : undefined;
+  const accent = hovered ? '#d97757' : undefined;
 
   return (
     <button

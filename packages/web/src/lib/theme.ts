@@ -1,28 +1,29 @@
 import type { ITheme } from '@xterm/xterm';
 
 /**
- * termora terminal theme — dark background with orange cursor accent.
+ * termora terminal theme — Anthropic warm dark palette.
+ * Background #141413, cursor #d97757 (Anthropic orange).
  */
 export const TERMORA_THEME: ITheme = {
-  background: '#060606',
-  foreground: '#d0d0d0',
-  cursor: '#f97316',
-  cursorAccent: '#060606',
-  selectionBackground: '#f9731640',
-  black: '#1a1a1a',
-  red: '#f87171',
-  green: '#4ade80',
-  yellow: '#fbbf24',
-  blue: '#60a5fa',
-  magenta: '#c084fc',
-  cyan: '#22d3ee',
-  white: '#d0d0d0',
-  brightBlack: '#404040',
-  brightRed: '#f87171',
-  brightGreen: '#4ade80',
-  brightYellow: '#fbbf24',
-  brightBlue: '#60a5fa',
-  brightMagenta: '#c084fc',
-  brightCyan: '#22d3ee',
-  brightWhite: '#ffffff',
+  background: '#141413',
+  foreground: '#e8e6dc',
+  cursor: '#d97757',
+  cursorAccent: '#141413',
+  selectionBackground: '#d9775740',
+  black: '#282725',
+  red: '#e87c6a',
+  green: '#788c5d',
+  yellow: '#e8c468',
+  blue: '#6a9bcc',
+  magenta: '#b07ab0',
+  cyan: '#5ca8a8',
+  white: '#e8e6dc',
+  brightBlack: '#4a4845',
+  brightRed: '#e8856a',
+  brightGreen: '#8da070',
+  brightYellow: '#ecd080',
+  brightBlue: '#7cb4e8',
+  brightMagenta: '#c090c0',
+  brightCyan: '#70baba',
+  brightWhite: '#faf9f5',
 };

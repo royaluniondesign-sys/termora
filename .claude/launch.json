@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "termora-web",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--workspace=packages/web"],
-      "port": 4031
+      "runtimeExecutable": "/opt/homebrew/bin/npx",
+      "runtimeArgs": ["vite", "--config", "packages/web/vite.config.ts", "--host"],
+      "port": 4035,
+      "autoPort": true
     }
   ]
 }

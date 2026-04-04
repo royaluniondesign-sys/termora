@@ -20,7 +20,7 @@ export function MenuBar() {
   }, []);
 
   return (
-    <div className="flex h-6 shrink-0 items-center justify-between bg-[#1a1a1a] px-3 font-mono text-[11px] text-neutral-400">
+    <div className="flex h-6 shrink-0 items-center justify-between bg-termora-surface px-3 font-mono text-[11px] text-neutral-400">
       {/* Left: traffic lights + menu items */}
       <div className="flex items-center gap-4">
         <TrafficLights />

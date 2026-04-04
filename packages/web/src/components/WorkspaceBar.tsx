@@ -17,7 +17,7 @@ export function WorkspaceBar({
       style={{
         height: 32,
         background: '#000',
-        borderTop: '1px solid #1a1a1a',
+        borderTop: '1px solid #282725',
         scrollbarWidth: 'none',
         flexShrink: 0,
       }}
@@ -34,7 +34,7 @@ export function WorkspaceBar({
               fontSize: 11,
               fontFamily: 'JetBrains Mono, monospace',
               fontWeight: isActive ? 700 : 400,
-              background: isActive ? '#f97316' : 'transparent',
+              background: isActive ? '#d97757' : 'transparent',
               color: isActive ? '#000' : '#555',
               borderRadius: isActive ? 4 : 0,
               border: 'none',

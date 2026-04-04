@@ -18,8 +18,8 @@ export function ConnectionOverlay({ mode }: ConnectionOverlayProps) {
       <div className="flex flex-col items-center gap-4">
         {/* Pulsing dot */}
         <div className="relative flex h-4 w-4 items-center justify-center">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-termora-gold opacity-40" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-termora-gold" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-termora-orange opacity-40" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-termora-orange" />
         </div>
 
         {/* Status text */}

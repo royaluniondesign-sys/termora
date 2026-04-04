@@ -11,14 +11,14 @@
 
 // Colors matching TERMORA_THEME in theme.ts
 const ANSI_COLORS: Record<number, string> = {
-  30: '#1a1a1a', 31: '#f87171', 32: '#4ade80', 33: '#fbbf24',
+  30: '#282725', 31: '#f87171', 32: '#4ade80', 33: '#fbbf24',
   34: '#60a5fa', 35: '#c084fc', 36: '#22d3ee', 37: '#d0d0d0',
   90: '#404040', 91: '#f87171', 92: '#4ade80', 93: '#fbbf24',
   94: '#60a5fa', 95: '#c084fc', 96: '#22d3ee', 97: '#ffffff',
 };
 
 const ANSI_BG_COLORS: Record<number, string> = {
-  40: '#1a1a1a', 41: '#f87171', 42: '#4ade80', 43: '#fbbf24',
+  40: '#282725', 41: '#f87171', 42: '#4ade80', 43: '#fbbf24',
   44: '#60a5fa', 45: '#c084fc', 46: '#22d3ee', 47: '#d0d0d0',
   100: '#404040', 101: '#f87171', 102: '#4ade80', 103: '#fbbf24',
   104: '#60a5fa', 105: '#c084fc', 106: '#22d3ee', 107: '#ffffff',

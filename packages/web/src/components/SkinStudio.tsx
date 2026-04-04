@@ -51,22 +51,22 @@ export default function SkinStudio({
   return (
     <div
       className="flex flex-col overflow-hidden"
-      style={{ background: '#060606', height: '100%' }}
+      style={{ background: '#141413', height: '100%' }}
     >
       {/* ── Header ──────────────────────────────────────────────── */}
       <div
         className="flex items-center justify-between shrink-0 px-4"
         style={{
           height: 44,
-          background: '#0a0a0a',
-          borderBottom: '1px solid #1a1a1a',
+          background: '#1e1d1b',
+          borderBottom: '1px solid #282725',
         }}
       >
         <button
           onClick={onClose}
           className="text-left"
           style={{
-            color: '#f97316',
+            color: '#d97757',
             fontSize: 12,
             fontFamily: "'JetBrains Mono', monospace",
             background: 'none',
@@ -232,14 +232,14 @@ function SkinCard({
       onClick={() => onSelect(skinId)}
       style={{
         background: '#111111',
-        border: selected ? '1px solid #f97316' : '1px solid #222222',
+        border: selected ? '1px solid #d97757' : '1px solid #222222',
         borderRadius: 12,
         overflow: 'hidden',
         cursor: 'pointer',
         padding: 0,
         textAlign: 'left',
         position: 'relative',
-        boxShadow: selected ? '0 0 0 1px #f97316' : 'none',
+        boxShadow: selected ? '0 0 0 1px #d97757' : 'none',
       }}
     >
       {/* Selected checkmark */}
@@ -252,7 +252,7 @@ function SkinCard({
             width: 18,
             height: 18,
             borderRadius: '50%',
-            background: '#f97316',
+            background: '#d97757',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

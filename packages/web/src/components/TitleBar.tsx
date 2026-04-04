@@ -25,8 +25,8 @@ export function TitleBar({
     <div
       style={{
         height: 44,
-        background: '#0a0a0a',
-        borderBottom: '1px solid #1a1a1a',
+        background: '#1e1d1b',
+        borderBottom: '1px solid #282725',
         display: 'flex',
         alignItems: 'center',
         padding: '0 12px',
@@ -66,7 +66,7 @@ export function TitleBar({
                 fontSize: 12,
                 color: '#ccc',
                 background: '#161616',
-                border: '1px solid #f97316',
+                border: '1px solid #d97757',
                 borderRadius: 3,
                 padding: '2px 6px',
                 overflow: 'hidden',
@@ -82,7 +82,7 @@ export function TitleBar({
                   display: 'inline-block',
                   width: 1,
                   height: 14,
-                  background: '#f97316',
+                  background: '#d97757',
                   marginLeft: 1,
                   verticalAlign: 'middle',
                   animation: 'blink 1s step-end infinite',

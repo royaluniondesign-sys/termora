@@ -1,10 +1,24 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-termora-gold: #D4AF37;
-  --color-termora-bg: #060606;
-  --color-termora-surface: #0a0a0a;
-  --color-termora-border: #1a1a1a;
+  /* Anthropic palette */
+  --color-termora-orange: #d97757;
+  --color-termora-orange-dim: #c46a4d;
+  --color-termora-orange-bright: #e8856a;
+  --color-termora-bg: #141413;
+  --color-termora-surface: #1e1d1b;
+  --color-termora-surface-2: #282725;
+  --color-termora-surface-3: #33312f;
+  --color-termora-border: #3a3835;
+  --color-termora-border-light: #4a4845;
+  --color-termora-light: #faf9f5;
+  --color-termora-light-gray: #e8e6dc;
+  --color-termora-mid: #b0aea5;
+  --color-termora-text-muted: #78756f;
+  --color-termora-green: #788c5d;
+  --color-termora-blue: #6a9bcc;
+  /* Legacy aliases for components still using old names */
+  --color-termora-gold: #d97757;
 }
 
 @keyframes notch-pulse {
@@ -18,13 +32,15 @@ body {
   padding: 0;
   background: var(--color-termora-bg);
   font-family:
-    'SF Mono',
-    'Fira Code',
-    'JetBrains Mono',
-    ui-monospace,
-    monospace;
+    'Styrene A',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
   height: 100dvh;
   overflow: hidden;
+  color: var(--color-termora-light);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
@@ -47,25 +63,25 @@ body {
 
 [data-skin],
 [data-skin="macbook-silver"] {
-  --kbd-bg: #141416;
-  --key-face: #1c1c1e;
-  --key-border: #2e2e30;
-  --key-side: #0e0e0f;
-  --key-label: #8a8a8e;
-  --key-label-shift: #555558;
-  --key-hover: #242426;
-  --key-active: #161618;
+  --kbd-bg: #1e1d1b;
+  --key-face: #282725;
+  --key-border: #3a3835;
+  --key-side: #141413;
+  --key-label: #b0aea5;
+  --key-label-shift: #78756f;
+  --key-hover: #33312f;
+  --key-active: #1e1d1b;
 }
 
 [data-skin="ios-terminal"] {
-  --kbd-bg: #1b1b1d;
-  --key-face: #2c2c2e;
-  --key-border: #3a3a3c;
-  --key-side: #161618;
-  --key-label: #ffffff;
-  --key-label-shift: #8e8e93;
-  --key-hover: #3a3a3c;
-  --key-active: #1c1c1e;
+  --kbd-bg: #1e1d1b;
+  --key-face: #33312f;
+  --key-border: #4a4845;
+  --key-side: #1e1d1b;
+  --key-label: #faf9f5;
+  --key-label-shift: #b0aea5;
+  --key-hover: #4a4845;
+  --key-active: #282725;
 }
 
 [data-skin="gamer-rgb"] {
@@ -80,36 +96,36 @@ body {
 }
 
 [data-skin="custom-painted"] {
-  --kbd-bg: #0f0a00;
-  --key-face: #1a1200;
-  --key-border: #2d2000;
-  --key-side: #0a0800;
-  --key-label: #ccaa44;
-  --key-label-shift: #aa8833;
-  --key-hover: #231800;
-  --key-active: #0f0d00;
+  --kbd-bg: #1e1d1b;
+  --key-face: #282725;
+  --key-border: #3a3835;
+  --key-side: #141413;
+  --key-label: #d97757;
+  --key-label-shift: #c46a4d;
+  --key-hover: #33312f;
+  --key-active: #1e1d1b;
 }
 
 [data-skin="amber-retro"] {
-  --kbd-bg: #0a0600;
-  --key-face: #1a1000;
-  --key-border: #3d2800;
-  --key-side: #0a0700;
+  --kbd-bg: #141413;
+  --key-face: #1e1d1b;
+  --key-border: #3a3835;
+  --key-side: #141413;
   --key-label: #c87700;
   --key-label-shift: #996000;
-  --key-hover: #221500;
-  --key-active: #150e00;
+  --key-hover: #282725;
+  --key-active: #1e1d1b;
 }
 
 [data-skin="ice-white"] {
-  --kbd-bg: #e8eaed;
-  --key-face: #f5f6f8;
-  --key-border: #d0d2d5;
-  --key-side: #b8babe;
-  --key-label: #2a2a2a;
-  --key-label-shift: #555555;
+  --kbd-bg: #e8e6dc;
+  --key-face: #faf9f5;
+  --key-border: #d0cec5;
+  --key-side: #b0aea5;
+  --key-label: #141413;
+  --key-label-shift: #78756f;
   --key-hover: #ffffff;
-  --key-active: #e8eaed;
+  --key-active: #e8e6dc;
 }
 
 /* ── Gamer RGB animation ──────────────────────────────────────────────────── */
@@ -146,3 +162,11 @@ body {
 [data-skin="gamer-rgb"] [data-key]:nth-child(16) { --hue-offset: 300deg; }
 [data-skin="gamer-rgb"] [data-key]:nth-child(17) { --hue-offset: 320deg; }
 [data-skin="gamer-rgb"] [data-key]:nth-child(18) { --hue-offset: 340deg; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

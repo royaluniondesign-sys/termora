@@ -10,7 +10,7 @@ const MODE_CONFIG: Record<
   ModeIndicatorProps['mode'],
   { label: string; bg: string; dotColor: string | null }
 > = {
-  demo: { label: 'DEMO', bg: 'bg-termora-gold', dotColor: null },
+  demo: { label: 'DEMO', bg: 'bg-termora-orange', dotColor: null },
   live: { label: 'LIVE', bg: 'bg-green-600', dotColor: '#4ade80' },
   detecting: { label: '...', bg: 'bg-neutral-700', dotColor: null },
 };

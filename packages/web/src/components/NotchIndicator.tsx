@@ -11,7 +11,7 @@ export function NotchIndicator({ active }: NotchIndicatorProps) {
 
   return (
     <div
-      className="h-2 w-2 rounded-full bg-termora-gold"
+      className="h-2 w-2 rounded-full bg-termora-orange"
       style={{
         animation: 'notch-pulse 2s ease-in-out infinite',
       }}

@@ -75,7 +75,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
 
         {/* Header */}
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#f97316', letterSpacing: '0.1em' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#d97757', letterSpacing: '0.1em' }}>
             SETTINGS
           </span>
           <button
@@ -108,7 +108,7 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
               textAlign: 'center',
             }}
           >
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#f97316' }}>{sessionCount}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#d97757' }}>{sessionCount}</div>
             <div style={{ fontSize: 9, color: '#555', marginTop: 2 }}>SESSIONS</div>
           </div>
           <div
@@ -200,12 +200,12 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
               </div>
               <div
                 style={{
-                  background: '#060606',
+                  background: '#141413',
                   border: '1px solid #333',
                   borderRadius: 6,
                   padding: '8px 12px',
                   fontSize: 11,
-                  color: '#f97316',
+                  color: '#d97757',
                   wordBreak: 'break-all',
                   marginBottom: 12,
                 }}
@@ -217,9 +217,9 @@ export function SettingsPanel({ onClose, onOpenSkinStudio, sessionCount }: Setti
                 onClick={handleCopyUrl}
                 style={{
                   background: copied ? 'rgba(40,200,64,0.2)' : 'rgba(249,115,22,0.15)',
-                  border: `1px solid ${copied ? '#28c840' : '#f97316'}`,
+                  border: `1px solid ${copied ? '#28c840' : '#d97757'}`,
                   borderRadius: 6,
-                  color: copied ? '#28c840' : '#f97316',
+                  color: copied ? '#28c840' : '#d97757',
                   fontSize: 12,
                   fontFamily: 'JetBrains Mono, monospace',
                   padding: '6px 20px',

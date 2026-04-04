@@ -36,7 +36,7 @@ export function ContextStrip({ onKey }: ContextStripProps) {
       style={{
         height: 48,
         background: '#0d0d0d',
-        borderTop: '1px solid #1a1a1a',
+        borderTop: '1px solid #282725',
         display: 'flex',
         alignItems: 'center',
         gap: 6,

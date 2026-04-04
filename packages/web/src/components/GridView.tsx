@@ -22,7 +22,7 @@ export function GridView({
       className="flex flex-col"
       style={{
         height: '100%',
-        background: '#0a0a0a',
+        background: '#1e1d1b',
         fontFamily: 'JetBrains Mono, monospace',
         userSelect: 'none',
       }}
@@ -37,7 +37,7 @@ export function GridView({
             style={{
               fontSize: 14,
               fontWeight: 700,
-              color: '#f97316',
+              color: '#d97757',
               letterSpacing: '0.15em',
             }}
           >
@@ -47,7 +47,7 @@ export function GridView({
             className="rounded-full px-2"
             style={{
               fontSize: 11,
-              background: '#1a1a1a',
+              background: '#282725',
               border: '1px solid #2a2a2a',
               color: '#555',
               paddingTop: 2,

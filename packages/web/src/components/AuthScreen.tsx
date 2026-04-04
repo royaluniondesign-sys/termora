@@ -97,7 +97,7 @@ export function AuthScreen({ auth, onBootstrapSubmit }: AuthScreenProps) {
                     placeholder="Long-press to paste token..."
                     autoComplete="off"
                     disabled={auth.loading}
-                    className="w-full rounded-md border border-termora-border bg-termora-surface px-3 py-2.5 pr-20 text-sm text-white placeholder-neutral-600 outline-none transition-colors focus:border-termora-gold min-h-[42px]"
+                    className="w-full rounded-md border border-termora-border bg-termora-surface px-3 py-2.5 pr-20 text-sm text-white placeholder-neutral-600 outline-none transition-colors focus:border-termora-orange min-h-[42px]"
                   />
                 ) : (
                   <input
@@ -109,7 +109,7 @@ export function AuthScreen({ auth, onBootstrapSubmit }: AuthScreenProps) {
                     autoComplete="off"
                     autoFocus
                     disabled={auth.loading}
-                    className="w-full rounded-md border border-termora-border bg-termora-surface px-3 py-2.5 pr-20 text-sm text-white placeholder-neutral-600 outline-none transition-colors focus:border-termora-gold"
+                    className="w-full rounded-md border border-termora-border bg-termora-surface px-3 py-2.5 pr-20 text-sm text-white placeholder-neutral-600 outline-none transition-colors focus:border-termora-orange"
                   />
                 )}
                 {/* Paste + keyboard toggle buttons */}
@@ -118,7 +118,7 @@ export function AuthScreen({ auth, onBootstrapSubmit }: AuthScreenProps) {
                     type="button"
                     onClick={() => void handlePaste()}
                     disabled={auth.loading}
-                    className="rounded px-2 py-1 text-xs font-medium text-neutral-500 transition-colors hover:text-termora-gold active:text-termora-gold disabled:opacity-50"
+                    className="rounded px-2 py-1 text-xs font-medium text-neutral-500 transition-colors hover:text-termora-orange active:text-termora-orange disabled:opacity-50"
                     title="Paste from clipboard"
                   >
                     Paste
@@ -128,7 +128,7 @@ export function AuthScreen({ auth, onBootstrapSubmit }: AuthScreenProps) {
                       type="button"
                       onClick={() => setShowKeyboard((prev) => !prev)}
                       disabled={auth.loading}
-                      className={`rounded p-1.5 transition-colors active:text-termora-gold disabled:opacity-50 ${showKeyboard ? 'text-termora-gold' : 'text-neutral-500 hover:text-termora-gold'}`}
+                      className={`rounded p-1.5 transition-colors active:text-termora-orange disabled:opacity-50 ${showKeyboard ? 'text-termora-orange' : 'text-neutral-500 hover:text-termora-orange'}`}
                       title="Toggle keyboard"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -144,7 +144,7 @@ export function AuthScreen({ auth, onBootstrapSubmit }: AuthScreenProps) {
             <button
               type="submit"
               disabled={auth.loading || !bootstrapToken.trim()}
-              className="w-full rounded-md bg-termora-gold px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-md bg-termora-orange px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {auth.loading ? 'Connecting...' : 'Connect'}
             </button>

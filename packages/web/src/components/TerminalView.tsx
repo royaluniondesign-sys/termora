@@ -171,7 +171,7 @@ export function TerminalView({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: '#0a0a0a',
+        background: '#141413',
         overflow: 'hidden',
       }}
       data-skin={skin}

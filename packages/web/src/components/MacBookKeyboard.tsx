@@ -125,9 +125,9 @@ export function MacBookKeyboard({ onKey, perKeyColors }: MacBookKeyboardProps) {
           minWidth: 0,
           height,
           background: isFlashing
-            ? '#f97316'
+            ? '#d97757'
             : perKeyColor ?? (isActive ? 'var(--key-active, #2a2a2e)' : 'var(--key-face, #1c1c1e)'),
-          border: `1px solid ${isActive || isFlashing ? '#f97316' : 'var(--key-border, #303032)'}`,
+          border: `1px solid ${isActive || isFlashing ? '#d97757' : 'var(--key-border, #303032)'}`,
           borderRadius: 4,
           boxShadow: isPressed
             ? '0 1px 0 var(--key-side, #0e0e0f), 0 1px 2px rgba(0,0,0,0.5)'
@@ -151,7 +151,7 @@ export function MacBookKeyboard({ onKey, perKeyColors }: MacBookKeyboardProps) {
               top: 2,
               left: 4,
               fontSize: 7,
-              color: isShifted ? '#f97316' : 'var(--key-label-shift, #555)',
+              color: isShifted ? '#d97757' : 'var(--key-label-shift, #555)',
               fontFamily: '"JetBrains Mono", monospace',
               lineHeight: 1,
             }}
@@ -164,7 +164,7 @@ export function MacBookKeyboard({ onKey, perKeyColors }: MacBookKeyboardProps) {
         <span
           style={{
             fontSize: 9,
-            color: isFlashing ? '#060606' : isActive ? '#f97316' : 'var(--key-label, #8a8a8e)',
+            color: isFlashing ? '#141413' : isActive ? '#d97757' : 'var(--key-label, #8a8a8e)',
             fontFamily: '"JetBrains Mono", monospace',
             lineHeight: 1,
             pointerEvents: 'none',
