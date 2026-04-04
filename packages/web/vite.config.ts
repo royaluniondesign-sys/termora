@@ -5,8 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: parseInt(process.env.PORT ?? process.env.WEB_PORT ?? '5173', 10),
-    host: true, // bind to 0.0.0.0 so phones on the same Wi-Fi can connect
+    port: parseInt(process.env.WEB_PORT ?? '4031', 10),
+    host: true,
     allowedHosts: ['.ngrok-free.dev', '.ngrok.io', '.localhost.run', '.lhr.life'],
     proxy: {
       '/ws': {

@@ -3,10 +3,9 @@
   "configurations": [
     {
       "name": "termora-web",
-      "runtimeExecutable": "/opt/homebrew/bin/npx",
-      "runtimeArgs": ["vite", "--config", "packages/web/vite.config.ts", "--host", "--port", "5173"],
-      "port": 5173,
-      "autoPort": false
+      "runtimeExecutable": "/usr/bin/python3",
+      "runtimeArgs": ["-m", "http.server", "5555", "--directory", "/Users/oxyzen/termora/packages/web"],
+      "port": 5555
     }
   ]
 }
