@@ -31,6 +31,9 @@ export function createAppServer(
 ): ServerContext {
   const app = express();
 
+  // Trust proxy headers from tunnels (ngrok, SSH)
+  app.set('trust proxy', true);
+
   // Middleware — CORS for development
   app.use((_req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
