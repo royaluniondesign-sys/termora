@@ -1,4 +1,5 @@
 import express, { type Express } from 'express';
+import rateLimit from 'express-rate-limit';
 import { createServer as createNetServer } from 'node:net';
 import { createServer, type Server as HttpServer } from 'node:http';
 import { WebSocketServer } from 'ws';
@@ -48,8 +49,17 @@ export function createAppServer(
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Rate limiting on auth endpoints (10 attempts per 15 min per IP)
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Too many authentication attempts, try again later' },
+  });
+
   // Auth routes
-  mountAuthRoutes(app, config, statements);
+  mountAuthRoutes(app, config, statements, authLimiter);
 
   // SSE routes
   const sseRouter = createSSERouter();
@@ -102,9 +112,10 @@ function mountAuthRoutes(
   app: Express,
   config: AgentConfig,
   statements: DbStatements,
+  limiter: ReturnType<typeof rateLimit>,
 ): void {
   // POST /api/auth/bootstrap — exchange a bootstrap token for a JWT
-  app.post('/api/auth/bootstrap', async (req, res) => {
+  app.post('/api/auth/bootstrap', limiter, async (req, res) => {
     try {
       const { token } = req.body as { token?: string };
 

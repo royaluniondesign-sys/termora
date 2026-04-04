@@ -62,11 +62,6 @@ export function initDatabase(dbPath: string): DbContext {
       last_seen TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS allowed_emails (
-      email TEXT PRIMARY KEY,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
     CREATE TABLE IF NOT EXISTS pty_sessions (
       id TEXT PRIMARY KEY,
       tmux_name TEXT NOT NULL UNIQUE,
@@ -75,6 +70,11 @@ export function initDatabase(dbPath: string): DbContext {
       cwd TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    -- Indexes for frequent lookups
+    CREATE INDEX IF NOT EXISTS idx_bootstrap_tokens_hash ON bootstrap_tokens(hash);
+    CREATE INDEX IF NOT EXISTS idx_sessions_jwt_id ON sessions(jwt_id);
+    CREATE INDEX IF NOT EXISTS idx_pty_sessions_tmux_name ON pty_sessions(tmux_name);
   `);
 
   // Prepare statements for repeated use

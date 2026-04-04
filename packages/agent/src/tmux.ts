@@ -1,7 +1,30 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execFile } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+
+/** Default timeout for async tmux operations (ms). */
+const TMUX_TIMEOUT = 5_000;
+
+/**
+ * Promisified execFile with timeout for non-blocking tmux operations.
+ */
+function execTmuxAsync(args: string[], encoding: 'utf-8'): Promise<string>;
+function execTmuxAsync(args: string[]): Promise<void>;
+function execTmuxAsync(args: string[], encoding?: 'utf-8'): Promise<string | void> {
+  return new Promise((resolve, reject) => {
+    execFile('tmux', args, {
+      encoding: encoding ?? 'utf-8',
+      timeout: TMUX_TIMEOUT,
+    }, (err: Error | null, stdout: string) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(encoding ? stdout : undefined);
+      }
+    });
+  });
+}
 
 /** Socket name for termora's isolated tmux server (avoids conflicts with user's tmux). */
 export const TMUX_SOCKET = 'termora';
@@ -107,10 +130,53 @@ export function capturePaneContent(tmuxName: string): string {
       '-L', TMUX_SOCKET,
       'capture-pane', '-t', tmuxName,
       '-p', '-S', '-', '-e',
-    ], { encoding: 'utf-8' });
-    // capture-pane outputs \n line endings, but xterm.js needs \r\n —
-    // without \r the cursor doesn't return to column 0, causing text to cascade right.
-    // Also trim trailing blank lines (empty terminal rows below content).
+    ], { encoding: 'utf-8', timeout: TMUX_TIMEOUT });
+    return content.replace(/\n+$/, '\n').replace(/\n/g, '\r\n');
+  } catch {
+    return '';
+  }
+}
+
+// ---- Async versions (non-blocking) ----
+
+/**
+ * Async version of listTermoraTmuxSessions. Does not block the event loop.
+ */
+export async function listTermoraTmuxSessionsAsync(): Promise<string[]> {
+  try {
+    const output = await execTmuxAsync(
+      ['-L', TMUX_SOCKET, 'list-sessions', '-F', '#{session_name}'],
+      'utf-8',
+    );
+    return output
+      .trim()
+      .split('\n')
+      .filter((name) => name.startsWith(SESSION_PREFIX));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Async version of killTmuxSession. Does not block the event loop.
+ */
+export async function killTmuxSessionAsync(name: string): Promise<void> {
+  try {
+    await execTmuxAsync(['-L', TMUX_SOCKET, 'kill-session', '-t', name]);
+  } catch {
+    // Session already gone
+  }
+}
+
+/**
+ * Async version of capturePaneContent. Does not block the event loop.
+ */
+export async function capturePaneContentAsync(tmuxName: string): Promise<string> {
+  try {
+    const content = await execTmuxAsync(
+      ['-L', TMUX_SOCKET, 'capture-pane', '-t', tmuxName, '-p', '-S', '-', '-e'],
+      'utf-8',
+    );
     return content.replace(/\n+$/, '\n').replace(/\n/g, '\r\n');
   } catch {
     return '';

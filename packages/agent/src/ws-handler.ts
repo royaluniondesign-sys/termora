@@ -9,13 +9,24 @@ import type { ClientMessage, ServerMessage, ShellType } from './types.js';
 const WS_CLOSE_UNAUTHORIZED = 4001;
 const WS_CLOSE_NORMAL = 1000;
 
+/** Backpressure threshold — drop messages if WS buffer exceeds this (bytes). */
+const BACKPRESSURE_HIGH = 64 * 1024;
+
+/** Max payload size for incoming WebSocket messages (1 MB). */
+const MAX_PAYLOAD = 1024 * 1024;
+
 /** Subscriptions map: which sessions each WebSocket client is subscribed to. */
 type SubscriptionMap = Map<WebSocket, Set<string>>;
 
-function send(ws: WebSocket, message: ServerMessage): void {
-  if (ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(message));
-  }
+/**
+ * Sends a message to a WebSocket client with backpressure awareness.
+ * Returns false if the message was dropped due to backpressure.
+ */
+function send(ws: WebSocket, message: ServerMessage): boolean {
+  if (ws.readyState !== WebSocket.OPEN) return false;
+  if (ws.bufferedAmount > BACKPRESSURE_HIGH) return false;
+  ws.send(JSON.stringify(message));
+  return true;
 }
 
 function sendError(ws: WebSocket, message: string): void {
@@ -332,6 +343,11 @@ function handleStdin(
   data: string,
   ptyManager: PTYManager,
 ): void {
+  // Input validation: reject oversized payloads
+  if (typeof data !== 'string' || data.length > MAX_PAYLOAD) {
+    sendError(ws, 'Input too large');
+    return;
+  }
   try {
     ptyManager.write(sessionId, data);
   } catch (err) {
@@ -347,6 +363,13 @@ function handleResize(
   rows: number,
   ptyManager: PTYManager,
 ): void {
+  // Input validation: reasonable terminal dimensions
+  if (typeof cols !== 'number' || typeof rows !== 'number'
+    || cols < 1 || cols > 500 || rows < 1 || rows > 500
+    || !Number.isInteger(cols) || !Number.isInteger(rows)) {
+    sendError(ws, 'Invalid dimensions');
+    return;
+  }
   try {
     ptyManager.resize(sessionId, cols, rows);
   } catch (err) {

@@ -71,7 +71,7 @@ export async function createSessionJWT(
   return new SignJWT({ ...claims })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime('7d')
     .setJti(jti)
     .setIssuer('termora-agent')
     .setSubject(claims.email ?? 'local')

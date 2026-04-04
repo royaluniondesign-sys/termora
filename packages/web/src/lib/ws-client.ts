@@ -6,15 +6,26 @@ export type ConnectionStatus =
   | 'disconnected'
   | 'reconnecting';
 
+export interface ReconnectInfo {
+  attempt: number;
+  maxAttempts: number;
+  nextRetryMs: number;
+}
+
 export interface WSClientOptions {
   url: string;
   sessionId: string;
   token: string;
   onMessage: (msg: ServerMessage) => void;
   onStatusChange: (status: ConnectionStatus) => void;
+  /** Called with reconnect progress info for UI feedback. */
+  onReconnectProgress?: (info: ReconnectInfo) => void;
   /** Called when the server closes the connection with code 4001 (bad/expired token). */
   onUnauthorized?: () => void;
 }
+
+/** Max reconnect attempts before giving up (user can still retry manually). */
+const MAX_RECONNECT_ATTEMPTS = 15;
 
 /** Interval between application-level ping messages (ms). */
 const PING_INTERVAL = 25_000;
@@ -255,10 +266,23 @@ export class TerminalWSClient {
     // Already have a pending reconnect scheduled
     if (this.reconnectTimer !== null) return;
 
+    // Give up after max attempts (user can still forceReconnect)
+    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      this.onStatusChange('disconnected');
+      return;
+    }
+
     this.onStatusChange('reconnecting');
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), MAX_BACKOFF);
     this.reconnectAttempts++;
+
+    // Notify UI of reconnect progress
+    this.options.onReconnectProgress?.({
+      attempt: this.reconnectAttempts,
+      maxAttempts: MAX_RECONNECT_ATTEMPTS,
+      nextRetryMs: delay,
+    });
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
