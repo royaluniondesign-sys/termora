@@ -8,6 +8,8 @@ import { useAuth } from './hooks/useAuth';
 import { useSessionManager } from './hooks/useSessionManager';
 import { useSkin } from './hooks/useSkin';
 import type { View } from './lib/types';
+import type { ConnectionStatus } from './lib/ws-client';
+import type { TerminalWSClient } from './lib/ws-client';
 
 /** Anthropic palette inline styles */
 const S = {
@@ -108,51 +110,135 @@ function ViewSwitcher({ current, onChange }: { current: 'terminal' | 'grid' | 'r
 }
 
 /**
- * Reconnect view — spinner, progress, retry
+ * Reconnect view — real connection status, retry, disconnect.
+ * Connected to actual WebSocket client state.
  */
-function ReconnectView() {
+function ReconnectView({ status, wsClient, onSwitchToTerminal }: {
+  status: ConnectionStatus;
+  wsClient: TerminalWSClient | null;
+  onSwitchToTerminal: () => void;
+}) {
+  const isConnected = status === 'connected';
+  const isReconnecting = status === 'reconnecting';
+  const isDisconnected = status === 'disconnected';
+
+  const handleRetry = useCallback(() => {
+    wsClient?.forceReconnect();
+  }, [wsClient]);
+
+  const handleDisconnect = useCallback(() => {
+    wsClient?.disconnect();
+  }, [wsClient]);
+
+  const statusColor = isConnected ? S.green : isReconnecting ? S.orange : '#e87c6a';
+  const statusLabel = isConnected ? 'Connected' : isReconnecting ? 'Reconnecting...' : 'Disconnected';
+  const statusIcon = isConnected ? 'M22 11.08V12a10 10 0 1 1-5.93-9.14' : isReconnecting ? 'M23 4v6h-6M20.49 15a9 9 0 1 1-2.12-9.36L23 10' : 'M18.36 5.64a9 9 0 0 1 .55 12.58M1 1l22 22';
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', height: '100%', gap: 14, padding: '0 36px',
+      justifyContent: 'center', height: '100%', gap: 16, padding: '0 36px',
     }}>
-      <div style={{
-        width: 44, height: 44, border: `3px solid ${S.border}`,
-        borderTopColor: S.orange, borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-      }} />
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: S.text1 }}>Reconnecting...</h3>
-      <span style={{ fontSize: 12, color: S.text3 }}>Attempt 2 of 5</span>
-      <div style={{ width: 160, height: 3, background: S.surface2, borderRadius: 2, overflow: 'hidden' }}>
+      {/* Status icon */}
+      {isReconnecting ? (
         <div style={{
-          height: '100%', background: S.orange, borderRadius: 2,
-          width: '40%', animation: 'prog 2s ease-in-out infinite',
+          width: 48, height: 48, border: `3px solid ${S.border}`,
+          borderTopColor: S.orange, borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
         }} />
-      </div>
-      <span style={{ fontSize: 10, color: S.text3, display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" stroke={S.green} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-        Sessions preserved. No data lost.
-      </span>
-      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <button type="button" style={{
-          minHeight: 44, padding: '0 16px', borderRadius: 8,
-          border: `1px solid ${S.border}`, background: 'transparent',
-          color: S.text3, fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
-          cursor: 'pointer',
+      ) : (
+        <div style={{
+          width: 48, height: 48, borderRadius: '50%',
+          background: `${statusColor}15`, border: `2px solid ${statusColor}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          Cancel
-        </button>
-        <button type="button" style={{
-          minHeight: 44, padding: '0 16px', borderRadius: 8,
-          border: 'none', background: S.orange, color: S.bg,
-          fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
-          cursor: 'pointer',
-        }}>
-          Retry Now
-        </button>
-      </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" stroke={statusColor} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d={statusIcon} />
+            {isConnected && <polyline points="16 8 22 2" />}
+          </svg>
+        </div>
+      )}
+
+      {/* Status text */}
+      <h3 style={{ fontSize: 18, fontWeight: 700, color: S.text1 }}>{statusLabel}</h3>
+
+      {/* Progress bar for reconnecting */}
+      {isReconnecting && (
+        <div style={{ width: 180, height: 3, background: S.surface2, borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', background: S.orange, borderRadius: 2,
+            width: '40%', animation: 'prog 2s ease-in-out infinite',
+          }} />
+        </div>
+      )}
+
+      {/* Connected state */}
+      {isConnected && (
+        <>
+          <span style={{ fontSize: 12, color: S.text3 }}>WebSocket connection is healthy</span>
+          <span style={{ fontSize: 10, color: S.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke={S.green} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Sessions preserved. Tunnel active.
+          </span>
+          <button type="button" onClick={onSwitchToTerminal} style={{
+            minHeight: 44, padding: '0 20px', borderRadius: 8,
+            border: 'none', background: S.orange, color: S.bg,
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', touchAction: 'manipulation', marginTop: 4,
+          }}>
+            Back to Terminal
+          </button>
+        </>
+      )}
+
+      {/* Reconnecting state */}
+      {isReconnecting && (
+        <>
+          <span style={{ fontSize: 10, color: S.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke={S.green} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Sessions preserved. No data lost.
+          </span>
+          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <button type="button" onClick={handleDisconnect} style={{
+              minHeight: 44, padding: '0 16px', borderRadius: 8,
+              border: `1px solid ${S.border}`, background: 'transparent',
+              color: S.text3, fontFamily: 'inherit', fontSize: 12, fontWeight: 500,
+              cursor: 'pointer', touchAction: 'manipulation',
+            }}>
+              Stop
+            </button>
+            <button type="button" onClick={handleRetry} style={{
+              minHeight: 44, padding: '0 16px', borderRadius: 8,
+              border: 'none', background: S.orange, color: S.bg,
+              fontFamily: 'inherit', fontSize: 12, fontWeight: 600,
+              cursor: 'pointer', touchAction: 'manipulation',
+            }}>
+              Retry Now
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Disconnected state */}
+      {isDisconnected && (
+        <>
+          <span style={{ fontSize: 12, color: S.text3 }}>Connection lost. Sessions may still be alive on the server.</span>
+          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <button type="button" onClick={handleRetry} style={{
+              minHeight: 44, padding: '0 20px', borderRadius: 8,
+              border: 'none', background: S.orange, color: S.bg,
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', touchAction: 'manipulation',
+            }}>
+              Reconnect
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -322,7 +408,7 @@ function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessi
 
 export function App() {
   const { auth, authenticateWithBootstrap, handleUnauthorized } = useAuth();
-  const { sessions, wsClient, messageBus, createSession, closeSession, getSessionOutput, setSessionSnapshot, renameSession } = useSessionManager(auth, handleUnauthorized);
+  const { sessions, wsClient, messageBus, createSession, closeSession, getSessionOutput, setSessionSnapshot, renameSession, status: connectionStatus } = useSessionManager(auth, handleUnauthorized);
   const { skin, setSkin, perKeyColors, setPerKeyColors } = useSkin();
 
   const [view, setView] = useState<View>('grid');
@@ -469,7 +555,13 @@ export function App() {
             sessionCount={sessions.length}
           />
         )}
-        {view === 'reconnect' && <ReconnectView />}
+        {view === 'reconnect' && (
+          <ReconnectView
+            status={connectionStatus}
+            wsClient={wsClient}
+            onSwitchToTerminal={() => setView('terminal')}
+          />
+        )}
       </div>
 
       {/* Settings overlay */}
