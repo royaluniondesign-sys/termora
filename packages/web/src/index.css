@@ -147,6 +147,16 @@ body {
   50% { opacity: 0; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes prog {
+  0% { width: 10%; }
+  50% { width: 60%; }
+  100% { width: 30%; }
+}
+
 @keyframes rgb-cycle {
   0%   { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }

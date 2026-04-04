@@ -21,7 +21,7 @@ export interface Session {
 
 // ── Views ─────────────────────────────────────────────────────────────────────
 
-export type View = 'grid' | 'terminal' | 'skin-studio';
+export type View = 'grid' | 'terminal' | 'skin-studio' | 'reconnect';
 
 // ── Keyboard Skins ────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ export interface GridViewProps {
   onSessionSelect: (sessionId: string) => void;
   onCreateSession: () => void;
   onCloseSession: (sessionId: string) => void;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
 }
 
 export interface TerminalViewProps {
