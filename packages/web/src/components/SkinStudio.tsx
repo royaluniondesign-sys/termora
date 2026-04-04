@@ -232,7 +232,7 @@ function SkinCard({
       onClick={() => onSelect(skinId)}
       style={{
         background: '#1e1d1b',
-        border: selected ? '1px solid #d97757' : '1px solid #222222',
+        border: selected ? '1px solid #d97757' : '1px solid #3a3835',
         borderRadius: 12,
         overflow: 'hidden',
         cursor: 'pointer',

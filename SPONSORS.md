@@ -7,8 +7,8 @@ termora is open source and free to use. If you find it useful, consider supporti
 - Star this repo
 - Report bugs and suggest features
 - Submit pull requests
-- [Buy me a coffee](https://buymeacoffee.com/rudlab)
 - [Sponsor on GitHub](https://github.com/sponsors/royaluniondesign-sys)
+- [Support on Ko-fi](https://ko-fi.com/rudlab)
 
 ## Current Sponsors
 

@@ -13,7 +13,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
 
   const badgeStyle: React.CSSProperties =
     session.status === 'run'
-      ? { background: 'rgba(0,255,135,0.15)', color: '#d97757' }
+      ? { background: 'rgba(120,140,93,0.15)', color: '#d97757' }
       : { background: 'rgba(100,100,100,0.2)', color: '#b0aea5' };
 
   const handleDeleteClick = useCallback((e: React.MouseEvent) => {
@@ -40,10 +40,10 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
       style={{
         aspectRatio: '1 / 1.18',
         background: isActive
-          ? 'linear-gradient(135deg, rgba(0,255,135,0.05), #111111)'
+          ? 'linear-gradient(135deg, rgba(120,140,93,0.05), #1e1d1b)'
           : '#1e1d1b',
         borderRadius: 10,
-        border: isActive ? '1px solid #d97757' : '1px solid #222222',
+        border: isActive ? '1px solid #d97757' : '1px solid #3a3835',
         boxShadow: isActive ? '0 0 0 1px #d97757' : 'none',
         overflow: 'hidden',
         display: 'flex',
@@ -76,7 +76,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
             width: 8,
             height: 8,
             borderRadius: '50%',
-            background: '#28c840',
+            background: '#788c5d',
           }}
         />
         <span
@@ -120,7 +120,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
             fontSize: 8,
             lineHeight: 1.4,
             fontFamily: 'JetBrains Mono, monospace',
-            color: '#d0d0d0',
+            color: '#e8e6dc',
             whiteSpace: 'pre',
             margin: 0,
             overflow: 'hidden',
@@ -134,7 +134,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
             height: 20,
             background: isActive
               ? 'linear-gradient(transparent, rgba(17,17,17,0.95))'
-              : 'linear-gradient(transparent, #111111)',
+              : 'linear-gradient(transparent, #1e1d1b)',
           }}
         />
       </div>
@@ -166,7 +166,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
           onClick={(e) => e.stopPropagation()}
           className="absolute inset-0 flex flex-col items-center justify-center"
           style={{
-            background: 'rgba(6,6,6,0.92)',
+            background: 'rgba(20,20,19,0.92)',
             borderRadius: 10,
             zIndex: 10,
           }}
@@ -174,7 +174,7 @@ export function SessionCard({ session, isActive, onSelect, onClose }: SessionCar
           <span
             style={{
               fontSize: 11,
-              color: '#aaa',
+              color: '#b0aea5',
               fontFamily: 'JetBrains Mono, monospace',
               marginBottom: 8,
               textAlign: 'center',

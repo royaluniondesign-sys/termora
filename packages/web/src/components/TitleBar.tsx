@@ -37,7 +37,7 @@ export function TitleBar({
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
-        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }} />
+        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#788c5d' }} />
       </div>
 
       {/* Session name — tap to edit, typed via MacBook keyboard */}
@@ -64,7 +64,7 @@ export function TitleBar({
               style={{
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: 12,
-                color: '#ccc',
+                color: '#e8e6dc',
                 background: '#1e1d1b',
                 border: '1px solid #d97757',
                 borderRadius: 3,
@@ -94,7 +94,7 @@ export function TitleBar({
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#28c840',
+                color: '#788c5d',
                 cursor: 'pointer',
                 padding: 0,
                 fontSize: 13,
@@ -129,7 +129,7 @@ export function TitleBar({
               style={{
                 fontFamily: '"JetBrains Mono", monospace',
                 fontSize: 12,
-                color: '#ccc',
+                color: '#e8e6dc',
                 cursor: 'pointer',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
