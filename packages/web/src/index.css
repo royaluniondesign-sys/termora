@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* Styrene A — Anthropic's brand sans-serif (loaded from /fonts/) */
+@font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Light.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+
 @theme {
   /* Anthropic palette */
   --color-termora-orange: #d97757;
