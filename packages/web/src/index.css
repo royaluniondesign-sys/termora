@@ -1,7 +1,13 @@
 @import 'tailwindcss';
 
-/* Styrene A — Anthropic's brand sans-serif (loaded from /fonts/) */
-@font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Light.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+/* Anthropic official font families (woff2 from anthropic.com CDN) */
+@font-face { font-family: 'Anthropic Sans'; src: url('/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Anthropic Sans'; src: url('/fonts/AnthropicSans-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Anthropic Serif'; src: url('/fonts/AnthropicSerif-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Anthropic Serif'; src: url('/fonts/AnthropicSerif-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Anthropic Mono'; src: url('/fonts/AnthropicMono-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Anthropic Mono'; src: url('/fonts/AnthropicMono-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+/* Styrene A — Anthropic's heading font (otf) */
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
@@ -38,6 +44,7 @@ body {
   padding: 0;
   background: var(--color-termora-bg);
   font-family:
+    'Anthropic Sans',
     'Styrene A',
     -apple-system,
     BlinkMacSystemFont,
