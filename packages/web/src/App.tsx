@@ -157,6 +157,169 @@ function ReconnectView() {
   );
 }
 
+/* SVG icon helper */
+const Icon = ({ d, color = 'currentColor', size = 16 }: { d: string; color?: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" stroke={color} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
+/**
+ * Terminal welcome — shown when Terminal tab is active but no session selected.
+ * Quick actions, useful commands, session info cards, and help links.
+ */
+function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessionCount }: {
+  onNewSession: () => void;
+  onOpenSettings: () => void;
+  onOpenSkinStudio: () => void;
+  sessionCount: number;
+}) {
+  const cardStyle = {
+    background: S.surface2, border: `1px solid ${S.border}`,
+    borderRadius: 10, padding: '14px 14px', cursor: 'pointer',
+    transition: 'all 200ms ease-out', touchAction: 'manipulation' as const,
+  };
+
+  return (
+    <div style={{ height: '100%', overflow: 'auto', padding: '16px 14px' }}>
+      {/* Logo + welcome */}
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+        <img src="/termora-logo.svg" alt="termora" style={{ width: 48, height: 48, margin: '0 auto 10px', display: 'block' }} />
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: S.text1, letterSpacing: -0.5 }}>Welcome to termora</h2>
+        <p style={{ fontSize: 12, color: S.text3, marginTop: 4 }}>Your machine, in your hands</p>
+      </div>
+
+      {/* New session CTA */}
+      <button
+        type="button"
+        onClick={onNewSession}
+        style={{
+          width: '100%', minHeight: 48, borderRadius: 10,
+          border: 'none', background: S.orange, color: S.bg,
+          fontFamily: 'inherit', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', touchAction: 'manipulation',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          marginBottom: 16,
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke={S.bg} fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="4 17 10 11 4 5" /><line x1="12" y1="19" x2="20" y2="19" />
+        </svg>
+        New Terminal Session
+      </button>
+
+      {/* Quick access cards */}
+      <div style={{ fontSize: 10, fontWeight: 600, color: S.text3, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+        Quick Access
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+        <div style={cardStyle} onClick={onOpenSkinStudio}>
+          <svg width="18" height="18" viewBox="0 0 24 24" stroke={S.orange} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="13.5" cy="6.5" r=".5" fill={S.orange} /><circle cx="17.5" cy="10.5" r=".5" fill={S.orange} />
+            <circle cx="8.5" cy="7.5" r=".5" fill={S.orange} /><circle cx="6.5" cy="12" r=".5" fill={S.orange} />
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.04-.24-.3-.39-.65-.39-1.04 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-5.17-4.49-9-10-9z" />
+          </svg>
+          <div style={{ fontSize: 12, fontWeight: 600, color: S.text1, marginTop: 8 }}>Keyboard Skins</div>
+          <div style={{ fontSize: 10, color: S.text3, marginTop: 2 }}>6 themes available</div>
+        </div>
+        <div style={cardStyle} onClick={onOpenSettings}>
+          <svg width="18" height="18" viewBox="0 0 24 24" stroke="#6a9bcc" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          <div style={{ fontSize: 12, fontWeight: 600, color: S.text1, marginTop: 8 }}>Share Access</div>
+          <div style={{ fontSize: 10, color: S.text3, marginTop: 2 }}>Copy URL for devices</div>
+        </div>
+      </div>
+
+      {/* Useful commands */}
+      <div style={{ fontSize: 10, fontWeight: 600, color: S.text3, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+        Useful Commands
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+        {[
+          { cmd: 'claude', desc: 'Start Claude Code AI agent', color: S.orange },
+          { cmd: 'git status', desc: 'Check repo state', color: S.green },
+          { cmd: 'npm run dev', desc: 'Start dev server', color: '#6a9bcc' },
+          { cmd: 'htop', desc: 'System monitor', color: S.text2 },
+        ].map((item) => (
+          <div key={item.cmd} style={{
+            ...cardStyle, padding: '10px 12px', cursor: 'default',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <code style={{
+              fontFamily: "'Fira Code', 'Anthropic Mono', monospace",
+              fontSize: 11, color: item.color, fontWeight: 500,
+              background: S.surface, padding: '2px 6px', borderRadius: 4,
+              border: `1px solid ${S.border}`,
+            }}>
+              {item.cmd}
+            </code>
+            <span style={{ fontSize: 11, color: S.text3 }}>{item.desc}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Session info */}
+      <div style={{ fontSize: 10, fontWeight: 600, color: S.text3, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+        Session Info
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
+        <div style={{ ...cardStyle, textAlign: 'center', cursor: 'default' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: S.orange }}>{sessionCount}</div>
+          <div style={{ fontSize: 9, color: S.text3, marginTop: 2, letterSpacing: 1 }}>ACTIVE</div>
+        </div>
+        <div style={{ ...cardStyle, textAlign: 'center', cursor: 'default' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ width: 8, height: 8, background: S.green, borderRadius: '50%' }} />
+          </div>
+          <div style={{ fontSize: 9, color: S.text3, marginTop: 4, letterSpacing: 1 }}>CONNECTED</div>
+        </div>
+        <div style={{ ...cardStyle, textAlign: 'center', cursor: 'default' }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: S.text1 }}>v0.1</div>
+          <div style={{ fontSize: 9, color: S.text3, marginTop: 2, letterSpacing: 1 }}>VERSION</div>
+        </div>
+      </div>
+
+      {/* Help links */}
+      <div style={{ fontSize: 10, fontWeight: 600, color: S.text3, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 8 }}>
+        Help & Resources
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+        {[
+          { label: 'GitHub Repository', url: 'https://github.com/royaluniondesign-sys/termora', icon: 'M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22' },
+          { label: 'Security Policy', url: 'https://github.com/royaluniondesign-sys/termora/blob/main/SECURITY.md', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
+          { label: 'Contributing Guide', url: 'https://github.com/royaluniondesign-sys/termora/blob/main/CONTRIBUTING.md', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' },
+          { label: 'Support (Ko-fi)', url: 'https://ko-fi.com/rudlab', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
+        ].map((link) => (
+          <a
+            key={link.label}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...cardStyle, padding: '10px 12px', textDecoration: 'none',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}
+          >
+            <Icon d={link.icon} color={S.text2} size={16} />
+            <span style={{ fontSize: 12, color: S.text1, fontWeight: 500 }}>{link.label}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" stroke={S.text3} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto' }}>
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </a>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', paddingBottom: 16 }}>
+        <img src="/termora-logo.svg" alt="" style={{ width: 16, height: 16, margin: '0 auto 4px', display: 'block', opacity: 0.4 }} />
+        <span style={{ fontSize: 9, color: S.text3 }}>termora v0.1.0 — by RUD</span>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   const { auth, authenticateWithBootstrap, handleUnauthorized } = useAuth();
   const { sessions, wsClient, messageBus, createSession, closeSession, getSessionOutput, setSessionSnapshot, renameSession } = useSessionManager(auth, handleUnauthorized);
@@ -299,25 +462,12 @@ export function App() {
           </div>
         )}
         {view === 'terminal' && !activeSession && (
-          <div style={{
-            height: '100%', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 12,
-            color: S.text3, fontSize: 13,
-          }}>
-            <span>No session selected</span>
-            <button
-              type="button"
-              onClick={handleCreateSession}
-              style={{
-                minHeight: 44, padding: '0 20px', borderRadius: 8,
-                border: 'none', background: S.orange, color: S.bg,
-                fontFamily: 'inherit', fontSize: 13, fontWeight: 600,
-                cursor: 'pointer', touchAction: 'manipulation',
-              }}
-            >
-              New Session
-            </button>
-          </div>
+          <TerminalWelcome
+            onNewSession={handleCreateSession}
+            onOpenSettings={handleOpenSettings}
+            onOpenSkinStudio={handleOpenSkinStudio}
+            sessionCount={sessions.length}
+          />
         )}
         {view === 'reconnect' && <ReconnectView />}
       </div>
