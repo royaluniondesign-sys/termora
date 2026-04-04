@@ -181,13 +181,13 @@ export function printAccessInfo(
   const r = '\x1b[0m';
 
   console.log('');
-  console.log(`${o}    ██████╗██╗     ███████╗██╗  ██╗${r}`);
-  console.log(`${o}   ██╔════╝██║     ██╔════╝██║  ██║${r}`);
-  console.log(`${o}   ██║     ██║     ███████╗███████║${r}`);
-  console.log(`${o}   ██║     ██║     ╚════██║██╔══██║${r}`);
-  console.log(`${o}   ╚██████╗███████╗███████║██║  ██║${r}`);
-  console.log(`${o}    ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝${r}`);
-  console.log(`${dim}              termora.dev${r}`);
+  console.log(`${o}   ████████╗███████╗██████╗ ███╗   ███╗ ██████╗ ██████╗  █████╗${r}`);
+  console.log(`${o}   ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██╔═══██╗██╔══██╗██╔══██╗${r}`);
+  console.log(`${o}      ██║   █████╗  ██████╔╝██╔████╔██║██║   ██║██████╔╝███████║${r}`);
+  console.log(`${o}      ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║██╔══██╗██╔══██║${r}`);
+  console.log(`${o}      ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██║  ██║██║  ██║${r}`);
+  console.log(`${o}      ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝${r}`);
+  console.log(`${dim}                    Your machine, in your hands.${r}`);
   console.log('');
 
   qrcode.generate(authUrl, { small: true }, (code: string) => {

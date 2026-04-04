@@ -9,10 +9,10 @@
   "homepage": "https://termora.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rud-lab/termora.git"
+    "url": "https://github.com/royaluniondesign-sys/termora.git"
   },
   "bugs": {
-    "url": "https://github.com/rud-lab/termora/issues"
+    "url": "https://github.com/royaluniondesign-sys/termora/issues"
   },
   "keywords": [
     "terminal",

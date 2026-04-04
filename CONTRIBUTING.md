@@ -5,7 +5,7 @@ Thanks for your interest in contributing to termora! This guide will help you ge
 ## Development Setup
 
 ```bash
-git clone https://github.com/rud-lab/termora
+git clone https://github.com/royaluniondesign-sys/termora
 cd termora
 cp .env.example .env          # Add your NGROK_AUTHTOKEN
 npm install                    # Installs all workspace deps + compiles node-pty
@@ -95,7 +95,7 @@ docs: add ngrok setup instructions to README
 
 ## Reporting Bugs
 
-Open a [GitHub issue](https://github.com/rud-lab/termora/issues/new?template=bug_report.yml) with:
+Open a [GitHub issue](https://github.com/royaluniondesign-sys/termora/issues/new?template=bug_report.yml) with:
 
 - Your environment (OS, Node version, browser)
 - Steps to reproduce
@@ -104,7 +104,7 @@ Open a [GitHub issue](https://github.com/rud-lab/termora/issues/new?template=bug
 
 ## Requesting Features
 
-Open a [GitHub issue](https://github.com/rud-lab/termora/issues/new?template=feature_request.yml) describing:
+Open a [GitHub issue](https://github.com/royaluniondesign-sys/termora/issues/new?template=feature_request.yml) describing:
 
 - The problem you're trying to solve
 - Your proposed solution

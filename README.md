@@ -26,20 +26,7 @@ A real PTY on your machine, streamed to your pocket.
 
 ---
 
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="docs/images/phone-grid.png" width="220" /><br /><b>Session Grid</b></td>
-<td align="center"><img src="docs/images/phone-claude.png" width="220" /><br /><b>Claude Code on Phone</b></td>
-<td align="center"><img src="docs/images/phone-terminal.png" width="220" /><br /><b>Terminal + Live Preview</b></td>
-</tr>
-<tr>
-<td align="center"><img src="docs/images/phone-claude-active.png" width="220" /><br /><b>MacBook Keyboard Skin</b></td>
-<td align="center"><img src="docs/images/phone-skins.png" width="220" /><br /><b>Skin Studio — 6 Themes</b></td>
-<td></td>
-</tr>
-</table>
-</div>
+> Screenshots coming soon — run `npm run dev` and scan the QR to see termora in action.
 
 ---
 
