@@ -26,9 +26,19 @@ const S = {
 } as const;
 
 /**
- * Dashboard nav bar — logo + termora + LIVE + settings
+ * Dashboard nav bar — logo + termora + connection status + settings
  */
-function DashNav({ onOpenSettings }: { onOpenSettings: () => void }) {
+function DashNav({ onOpenSettings, connectionStatus, onShowStatus }: {
+  onOpenSettings: () => void;
+  connectionStatus: import('./lib/ws-client').ConnectionStatus;
+  onShowStatus: () => void;
+}) {
+  const isConnected = connectionStatus === 'connected';
+  const isReconnecting = connectionStatus === 'reconnecting';
+  const statusColor = isConnected ? S.green : isReconnecting ? S.orange : '#e87c6a';
+  const statusBg = isConnected ? 'rgba(120,140,93,0.12)' : isReconnecting ? 'rgba(217,119,87,0.12)' : 'rgba(232,124,106,0.12)';
+  const statusLabel = isConnected ? 'LIVE' : isReconnecting ? 'RECONNECTING' : 'OFFLINE';
+
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -37,14 +47,25 @@ function DashNav({ onOpenSettings }: { onOpenSettings: () => void }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <img src="/termora-logo.svg" alt="termora" style={{ width: 28, height: 28 }} />
         <span style={{ fontSize: 14, fontWeight: 700, color: S.text1, letterSpacing: -0.3 }}>termora</span>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 3,
-          fontSize: 9, fontWeight: 700, color: S.green,
-          background: 'rgba(120,140,93,0.12)', padding: '2px 7px', borderRadius: 6,
-        }}>
-          <span style={{ width: 4, height: 4, background: S.green, borderRadius: '50%' }} />
-          LIVE
-        </span>
+        {/* Clickable status badge — opens the Status/Reconnect view */}
+        <button
+          type="button"
+          onClick={onShowStatus}
+          title={isConnected ? 'Connection healthy — click for details' : 'Click to reconnect'}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: 9, fontWeight: 700, color: statusColor,
+            background: statusBg, padding: '3px 8px', borderRadius: 6,
+            border: 'none', cursor: 'pointer', touchAction: 'manipulation',
+            transition: 'all 180ms ease-out',
+          }}
+        >
+          <span style={{
+            width: 5, height: 5, background: statusColor, borderRadius: '50%',
+            animation: isReconnecting ? 'pulse 1.5s ease-in-out infinite' : 'none',
+          }} />
+          {statusLabel}
+        </button>
       </div>
       <div style={{ display: 'flex', gap: 6 }}>
         <button
@@ -56,6 +77,7 @@ function DashNav({ onOpenSettings }: { onOpenSettings: () => void }) {
             borderRadius: 8, background: S.surface2, border: `1px solid ${S.border}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: S.text2, cursor: 'pointer', padding: 0,
+            transition: 'all 180ms ease-out',
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -74,8 +96,8 @@ function DashNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 function ViewSwitcher({ current, onChange }: { current: 'terminal' | 'grid' | 'reconnect'; onChange: (v: 'terminal' | 'grid' | 'reconnect') => void }) {
   const views = [
     { id: 'terminal' as const, label: 'Terminal' },
-    { id: 'grid' as const, label: 'Dashboard' },
-    { id: 'reconnect' as const, label: 'Reconnect' },
+    { id: 'grid' as const, label: 'Sessions' },
+    { id: 'reconnect' as const, label: 'Status' },
   ];
   return (
     <div style={{
@@ -313,8 +335,8 @@ function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessi
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
-          <div style={{ fontSize: 12, fontWeight: 600, color: S.text1, marginTop: 8 }}>Share Access</div>
-          <div style={{ fontSize: 10, color: S.text3, marginTop: 2 }}>Copy URL for devices</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: S.text1, marginTop: 8 }}>Connection</div>
+          <div style={{ fontSize: 10, color: S.text3, marginTop: 2 }}>URL, tunnel, add machines</div>
         </div>
       </div>
 
@@ -525,7 +547,11 @@ export function App() {
       background: S.bg, overflow: 'hidden',
     }}>
       {/* Dashboard nav */}
-      <DashNav onOpenSettings={handleOpenSettings} />
+      <DashNav
+        onOpenSettings={handleOpenSettings}
+        connectionStatus={connectionStatus}
+        onShowStatus={() => setView('reconnect')}
+      />
 
       {/* View switcher: Terminal / Dashboard / Reconnect */}
       <ViewSwitcher

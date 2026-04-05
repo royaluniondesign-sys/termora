@@ -166,6 +166,13 @@ export function getTunnelUrl(): string | null {
 }
 
 /**
+ * Returns the full current tunnel result (url + method), or null if inactive.
+ */
+export function getTunnelInfo(): TunnelResult | null {
+  return currentTunnel;
+}
+
+/**
  * Prints a clean startup banner with QR code and access info.
  */
 export function printAccessInfo(

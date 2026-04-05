@@ -5,6 +5,7 @@ import { createServer, type Server as HttpServer } from 'node:http';
 import { WebSocketServer } from 'ws';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
+import { hostname } from 'node:os';
 import {
   generateBootstrapToken,
   verifyBootstrapToken,
@@ -12,6 +13,7 @@ import {
   createSessionJWT,
 } from './auth.js';
 import { createSSERouter } from './sse-handler.js';
+import { getTunnelInfo } from './tunnel.js';
 import type { DbStatements } from './db.js';
 import type { AgentConfig } from './config.js';
 
@@ -50,6 +52,23 @@ export function createAppServer(
   // Health check
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Connection info — returns tunnel URL/method and auth URL for sharing.
+  // The static token is already visible in the QR/terminal output; returning it
+  // here allows authenticated clients to copy and share the one-click auth URL.
+  app.get('/api/info', (_req, res) => {
+    const tunnel = getTunnelInfo();
+    const authUrl = tunnel?.url
+      ? `${tunnel.url}/?token=${config.staticToken}`
+      : null;
+    res.json({
+      tunnelUrl: tunnel?.url ?? null,
+      tunnelMethod: tunnel?.method ?? null,
+      authUrl,
+      machineName: hostname(),
+      version: '0.1.0',
+    });
   });
 
   // Rate limiting on auth endpoints (10 attempts per 15 min per IP)

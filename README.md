@@ -26,7 +26,24 @@ A real PTY on your machine, streamed to your pocket.
 
 ---
 
-> Screenshots coming soon — run `npm run dev` and scan the QR to see termora in action.
+<div align="center">
+<img src="assets/setup-flow.gif" alt="termora setup — scan QR, connect instantly" width="280" />
+</div>
+
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="docs/images/phone-grid.png" width="200" /><br /><sub><b>Session Grid</b></sub></td>
+<td align="center"><img src="docs/images/phone-claude.png" width="200" /><br /><sub><b>Claude Code on Phone</b></sub></td>
+<td align="center"><img src="docs/images/phone-terminal.png" width="200" /><br /><sub><b>Live Terminal</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/images/phone-claude-active.png" width="200" /><br /><sub><b>MacBook Keyboard Skin</b></sub></td>
+<td align="center"><img src="docs/images/phone-skins.png" width="200" /><br /><sub><b>Skin Studio — 6 Themes</b></sub></td>
+<td></td>
+</tr>
+</table>
+</div>
 
 ---
 
@@ -122,11 +139,14 @@ Found a vulnerability? See [SECURITY.md](SECURITY.md) for our disclosure policy.
 - **Context strip** — quick-access: esc, F1-F5, commit, diff, plan, Ctrl+C
 - **6 skins** — iOS Terminal, MacBook Silver, Gamer RGB, Custom Painted, Amber Retro, Ice White
 
-### Connectivity
+### Connectivity & Multi-Machine
 - **3-tier tunnel fallback** — ngrok, localhost.run SSH, local Wi-Fi
 - **Zero-config start** — works immediately with SSH tunnel (no signup needed)
 - **Static URL with ngrok** — same URL every time for PWA home screen
 - **Auto-recovery** — tunnel recreates after sleep/wake
+- **One-click auth URL** — token embedded in URL; share with any device, no re-scanning
+- **Multi-machine** — each Mac runs its own agent; bookmark multiple URLs for different machines
+- **Connection panel** — shows live tunnel mode, copyable auth URL, ngrok setup guide, stop instructions
 
 ## Tech Stack
 
