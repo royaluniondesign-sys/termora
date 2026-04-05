@@ -276,11 +276,12 @@ const Icon = ({ d, color = 'currentColor', size = 16 }: { d: string; color?: str
  * Terminal welcome — shown when Terminal tab is active but no session selected.
  * Quick actions, useful commands, session info cards, and help links.
  */
-function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessionCount }: {
+function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessionCount, onRunCommand }: {
   onNewSession: () => void;
   onOpenSettings: () => void;
   onOpenSkinStudio: () => void;
   sessionCount: number;
+  onRunCommand: (cmd: string) => void;
 }) {
   const cardStyle = {
     background: S.surface2, border: `1px solid ${S.border}`,
@@ -340,26 +341,40 @@ function TerminalWelcome({ onNewSession, onOpenSettings, onOpenSkinStudio, sessi
         </div>
       </div>
 
-      {/* Useful commands */}
+      {/* Useful commands — tap to run */}
       <div style={{ fontSize: 10, fontWeight: 600, color: S.text3, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 8 }}>
-        Useful Commands
+        Run Command
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
         {[
           { cmd: 'claude', desc: 'Start Claude Code AI agent', color: S.orange },
+          { cmd: 'claude --dangerously-skip-permissions', desc: 'Claude Code (auto-approve)', color: S.orange },
           { cmd: 'git status', desc: 'Check repo state', color: S.green },
+          { cmd: 'git log --oneline -20', desc: 'Last 20 commits', color: S.green },
           { cmd: 'npm run dev', desc: 'Start dev server', color: '#6a9bcc' },
           { cmd: 'htop', desc: 'System monitor', color: S.text2 },
+          { cmd: 'ls -la', desc: 'List files', color: S.text2 },
+          { cmd: 'pwd', desc: 'Current directory', color: S.text2 },
         ].map((item) => (
-          <div key={item.cmd} style={{
-            ...cardStyle, padding: '10px 12px', cursor: 'default',
-            display: 'flex', alignItems: 'center', gap: 10,
-          }}>
+          <div
+            key={item.cmd}
+            role="button"
+            tabIndex={0}
+            onClick={() => onRunCommand(item.cmd)}
+            onKeyDown={(e) => e.key === 'Enter' && onRunCommand(item.cmd)}
+            style={{
+              ...cardStyle, padding: '10px 12px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill={item.color} stroke="none" style={{ flexShrink: 0 }}>
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
             <code style={{
               fontFamily: "'Fira Code', 'Anthropic Mono', monospace",
               fontSize: 11, color: item.color, fontWeight: 500,
               background: S.surface, padding: '2px 6px', borderRadius: 4,
-              border: `1px solid ${S.border}`,
+              border: `1px solid ${S.border}`, flexShrink: 0,
             }}>
               {item.cmd}
             </code>
@@ -439,6 +454,7 @@ export function App() {
 
   const awaitingNewSession = useRef(false);
   const sessionCountAtCreate = useRef(0);
+  const pendingCommand = useRef<string | null>(null);
 
   useEffect(() => {
     if (!awaitingNewSession.current) return;
@@ -447,8 +463,16 @@ export function App() {
       setActiveSessionId(newest.id);
       setView('terminal');
       awaitingNewSession.current = false;
+      if (pendingCommand.current !== null) {
+        const cmd = pendingCommand.current;
+        pendingCommand.current = null;
+        // Small delay so xterm.js can attach before we send
+        setTimeout(() => {
+          wsClient?.send({ type: 'stdin', sessionId: newest.id, data: cmd + '\n' });
+        }, 300);
+      }
     }
-  }, [sessions]);
+  }, [sessions, wsClient]);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
     setActiveSessionId(sessionId);
@@ -460,6 +484,20 @@ export function App() {
     awaitingNewSession.current = true;
     createSession();
   }, [createSession, sessions.length]);
+
+  const handleRunCommand = useCallback((cmd: string) => {
+    if (activeSessionId) {
+      // Active session exists — send directly and switch to terminal
+      wsClient?.send({ type: 'stdin', sessionId: activeSessionId, data: cmd + '\n' });
+      setView('terminal');
+    } else {
+      // No session yet — create one, then send once it's ready
+      pendingCommand.current = cmd;
+      sessionCountAtCreate.current = sessions.length;
+      awaitingNewSession.current = true;
+      createSession();
+    }
+  }, [activeSessionId, wsClient, sessions.length, createSession]);
 
   const handleBack = useCallback((snapshot: string) => {
     if (snapshot && activeSessionId) {
@@ -579,6 +617,7 @@ export function App() {
             onOpenSettings={handleOpenSettings}
             onOpenSkinStudio={handleOpenSkinStudio}
             sessionCount={sessions.length}
+            onRunCommand={handleRunCommand}
           />
         )}
         {view === 'reconnect' && (

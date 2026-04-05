@@ -251,7 +251,7 @@ function ConnectionSection() {
 // ── Multi-machine section ────────────────────────────────────────────────────
 function MultiMachineSection() {
   const [copied, setCopied] = useState(false);
-  const setupCmd = 'git clone https://github.com/rud-lab/termora.git && cd termora && npm install && npm run dev';
+  const setupCmd = 'git clone https://github.com/royaluniondesign-sys/termora.git && cd termora && npm install && npm run dev';
 
   const doCopy = useCallback(() => {
     navigator.clipboard.writeText(setupCmd).then(() => {
