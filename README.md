@@ -19,6 +19,23 @@
 
 ---
 
+<div align="center">
+<table>
+<tr>
+<td align="center"><img src="docs/images/phone-terminal.png" width="200" /><br /><sub><b>Terminal & Quick Launch</b></sub></td>
+<td align="center"><img src="docs/images/phone-commands.png" width="200" /><br /><sub><b>Tap-to-Run Commands</b></sub></td>
+<td align="center"><img src="docs/images/phone-grid.png" width="200" /><br /><sub><b>Session Grid</b></sub></td>
+</tr>
+<tr>
+<td align="center"><img src="docs/images/phone-status.png" width="200" /><br /><sub><b>Connection Status</b></sub></td>
+<td align="center"><img src="docs/images/phone-settings.png" width="200" /><br /><sub><b>Connection Panel</b></sub></td>
+<td></td>
+</tr>
+</table>
+</div>
+
+---
+
 ## Quickstart
 
 > Requires [Node.js 20+](https://nodejs.org) and macOS or Linux.

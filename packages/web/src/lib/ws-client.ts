@@ -201,7 +201,9 @@ export class TerminalWSClient {
    * Used by visibility-change and online-event handlers.
    */
   forceReconnect(): void {
-    if (this.disposed) return;
+    // Allow reconnecting even after an explicit disconnect() call
+    this.disposed = false;
+    this.addLifecycleListeners();
     // Already connected — nothing to do
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
