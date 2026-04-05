@@ -1,69 +1,27 @@
 <div align="center">
 
-<img src="assets/termora-logo.svg" alt="termora" width="96" />
+<img src="assets/termora-banner.svg" alt="termora — Your machine, in your hands." width="100%" />
 
-# termora
-
-**Your machine, in your hands.**
-
-Real terminal access from your phone. Not SSH. Not a simulation.
-A real PTY on your machine, streamed to your pocket.
+<br /><br />
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green?logo=node.js&logoColor=white)](https://nodejs.org)
-[![Build](https://img.shields.io/badge/Build-Passing-brightgreen)]()
-[![Security](https://img.shields.io/badge/Security-Hardened-blue?logo=shield)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-14%20passing-brightgreen)]()
-[![by](https://img.shields.io/badge/by-RUD-d97757)]()
+[![Security](https://img.shields.io/badge/Security-Hardened-blue)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-<br />
+**Real terminal access from your phone. Not SSH. Not a simulation. A real PTY on your machine, streamed to your pocket.**
 
-[Getting Started](#quickstart) · [Features](#features) · [Security](#security) · [Contributing](CONTRIBUTING.md) · [Sponsor](SPONSORS.md)
+[Quickstart](#quickstart) · [How it works](#how-it-works) · [Security](#security) · [Multi-machine](#multi-machine) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
 ---
-
-<div align="center">
-<img src="assets/setup-flow.gif" alt="termora setup — scan QR, connect instantly" width="280" />
-</div>
-
-<div align="center">
-<table>
-<tr>
-<td align="center"><img src="docs/images/phone-grid.png" width="200" /><br /><sub><b>Session Grid</b></sub></td>
-<td align="center"><img src="docs/images/phone-claude.png" width="200" /><br /><sub><b>Claude Code on Phone</b></sub></td>
-<td align="center"><img src="docs/images/phone-terminal.png" width="200" /><br /><sub><b>Live Terminal</b></sub></td>
-</tr>
-<tr>
-<td align="center"><img src="docs/images/phone-claude-active.png" width="200" /><br /><sub><b>MacBook Keyboard Skin</b></sub></td>
-<td align="center"><img src="docs/images/phone-skins.png" width="200" /><br /><sub><b>Skin Studio — 6 Themes</b></sub></td>
-<td></td>
-</tr>
-</table>
-</div>
-
----
-
-## What is termora?
-
-termora gives you real terminal access to your Mac from your phone. Clone, install, run — scan the QR code and you're in. Multiple live terminal sessions, a custom keyboard built for terminal use, 6 keyboard skins, touch-optimized copy/paste, and zero-loss reconnection. Open source, zero config.
-
-**Key highlights:**
-
-- Run Claude Code from your phone and watch it work in real time
-- **Touch Actions Bar** — select, copy, paste directly on the terminal
-- Multiple terminal sessions with live grid preview
-- Custom keyboard with sticky modifiers, key repeat, and context strip
-- 3-tier tunnel: ngrok, SSH, Wi-Fi (works without any signup)
-- **Zero-loss reconnection** — close the app, reopen, everything's still there
-- Install as a PWA — fullscreen, no browser chrome
 
 ## Quickstart
 
-> **Requires [Node.js 20+](https://nodejs.org)** and macOS or Linux.
+> Requires [Node.js 20+](https://nodejs.org) and macOS or Linux.
 
 ```bash
 git clone https://github.com/royaluniondesign-sys/termora.git
@@ -72,86 +30,205 @@ npm install
 npm run dev
 ```
 
-A QR code prints to the console. Scan it on your phone. That's it.
+A QR code appears in the console. Scan it with your phone. You're in — full terminal, real PTY, no signup required.
+
+**Already installed?**
+
+```bash
+cd termora && npm run dev
+```
+
+**Stop it:**
+
+```bash
+# Press Ctrl+C in the terminal where npm run dev is running
+```
+
+---
 
 ## How It Works
 
 ```
-  Phone / Tablet / Browser
+  Your Phone / Tablet / Browser
         |
-        | HTTPS (WebSocket)
+        | HTTPS + WebSocket (encrypted)
         v
-  +----------------+
-  |  Tunnel        |  ngrok / SSH (localhost.run) / Wi-Fi
-  +-------+--------+
-          v
-  +------------------------+
-  |  termora agent         |  <- runs on your machine
-  |  +-- PTY 0: zsh        |
-  |  +-- PTY 1: claude     |
-  |  +-- PTY 2: ...        |
-  |  +-- up to 8 sessions  |
-  +------------------------+
+  +---------------------------+
+  |  Tunnel (auto-selected)   |
+  |  1. ngrok (static URL)    |
+  |  2. localhost.run (SSH)   |  ← works instantly, no signup
+  |  3. Wi-Fi (LAN fallback)  |
+  +----------+----------------+
+             v
+  +---------------------------+
+  |   termora agent           |  ← runs on your machine
+  |   PTY 0: zsh              |
+  |   PTY 1: claude code      |
+  |   PTY 2: vim / htop...    |
+  |   up to 8 live sessions   |
+  +---------------------------+
 ```
 
 1. `npm run dev` starts the backend agent + React frontend
 2. The agent spawns real terminal sessions via `node-pty`
-3. When tmux is installed, sessions are wrapped in tmux for **persistence** — they survive server restarts
-4. A tunnel (ngrok, SSH, or Wi-Fi) exposes the agent over HTTPS
-5. A one-time bootstrap token + QR code authenticates your phone
-6. xterm.js renders the terminals in your browser with full color and interactivity
+3. A tunnel (auto-selected) exposes the agent over HTTPS
+4. A one-time bootstrap token + QR code authenticates your phone
+5. xterm.js renders terminals with full color, WebGL acceleration, and interactivity
+6. When tmux is installed, sessions survive server restarts with full scrollback
 
-## Security
+---
 
-termora is designed with security as a core principle, not an afterthought.
+## Why termora
 
-| Feature | Detail |
-|---------|--------|
-| **JWT Authentication** | 7-day rotation with one-time bootstrap tokens |
-| **Rate Limiting** | Auth endpoints protected (10 req/15min per IP) |
-| **Encrypted Tunnels** | All traffic over HTTPS via ngrok or SSH |
-| **No Cloud Storage** | Your data never leaves your machine |
-| **Restrictive CORS** | Production-mode restricts origins |
-| **Constant-time Comparison** | Token verification prevents timing attacks |
-| **Input Validation** | Resize bounds (1-500), stdin max 1MB |
-| **Backpressure** | WebSocket buffer limit prevents OOM (64KB threshold) |
+### Security
 
-Found a vulnerability? See [SECURITY.md](SECURITY.md) for our disclosure policy.
+termora is hardened at every layer:
+
+| Layer | Protection |
+|-------|-----------|
+| **Authentication** | One-time bootstrap token (5-min TTL) + 7-day JWT rotation |
+| **Static token** | Persistent auth URL — share once, always works; embedded in QR |
+| **Rate limiting** | Auth endpoints: 10 req/15min per IP |
+| **Transport** | All traffic over HTTPS via ngrok or SSH tunnel |
+| **Token comparison** | Constant-time to prevent timing attacks |
+| **Input validation** | Resize bounds (1–500 cols/rows), stdin capped at 1MB |
+| **Backpressure** | WebSocket buffer limit at 64KB — prevents OOM under load |
+| **CORS** | Restrictive in production — only your tunnel origin |
+| **No cloud storage** | Your data never leaves your machine |
+
+No accounts. No relay servers. No third-party access to your terminal.
+
+### Portability
+
+Your terminal goes with you — across devices, across networks, across countries.
+
+- **3-tier tunnel fallback** — ngrok → SSH (localhost.run) → Wi-Fi. Works instantly without any signup.
+- **Static URL with ngrok** — same URL every session. Bookmark it. Add it to your phone's home screen as a PWA.
+- **One-click auth URL** — token embedded in URL. Share the link, scan once, never re-authenticate.
+- **Zero-config start** — `npm run dev` is all you need.
+- **Auto-recovery** — tunnel automatically reconnects after sleep/wake or network change.
+- **PWA install** — add to home screen, runs fullscreen, no browser chrome.
+
+### Performance & Fluidity
+
+termora is built to feel native, not laggy:
+
+- **WebGL rendering** — xterm.js WebGL renderer for hardware-accelerated terminal output
+- **Zero-loss reconnection** — when you reconnect after a drop, the full session buffer replays automatically with progress feedback
+- **Session persistence** — tmux control mode wraps sessions; they survive server restarts with full scrollback history
+- **Backpressure management** — WebSocket buffer threshold prevents memory spikes under heavy output
+- **Sub-50ms latency** on local Wi-Fi; performant over HTTPS tunnels
+
+### Claude Code on Your Phone
+
+termora was built with Claude Code in mind:
+
+- Watch Claude Code work in real time from your phone
+- Full color ANSI rendering — diffs, spinners, progress bars all work
+- Custom keyboard with `Ctrl`, `Tab`, `Esc`, arrow keys, and Claude-specific shortcuts (commit, diff, plan, Ctrl+C) built in
+- Sticky modifiers — tap Shift/Ctrl/Opt once, it stays for the next key
+- Touch Actions Bar — select, copy, paste, cut without fighting the mobile keyboard
+- Session grid — see all your terminals at a glance; switch instantly
+
+---
 
 ## Features
 
 ### Terminal
-- **Multiple live sessions** — create, rename, close; up to 8 concurrent PTYs
-- **Real PTY** — full zsh/bash with colors, vim, tmux, everything
-- **Session persistence** — sessions survive server restarts via tmux (async, non-blocking)
+- **Multiple live sessions** — up to 8 concurrent PTYs, create/rename/close
+- **Real PTY** — full zsh/bash with colors, vim, htop, tmux, everything works
+- **Session persistence** — sessions survive server restarts via tmux (auto-detected, no config)
 - **Session grid** — 2-column card layout with live terminal previews
 
-### Touch and Mobile
+### Touch & Mobile
 - **Touch Actions Bar** — select, copy, paste, cut, tab, history — always visible
-- **Zero-loss reconnection** — automatic buffer replay on reconnect with progress feedback
-- **PWA** — install to home screen, runs fullscreen
-- **iOS keyboard suppressed** — custom keyboard replaces system keyboard
+- **Zero-loss reconnection** — buffer replay on reconnect with progress indicator
+- **PWA** — install to home screen, runs fullscreen, no browser chrome
+- **iOS system keyboard suppressed** — custom keyboard takes over
 
 ### Keyboard
 - **Two layouts** — iOS Terminal (6-row) and MacBook (5-row)
-- **Sticky modifiers** — tap Shift/Ctrl/Opt/Cmd once, it stays for the next key
+- **Sticky modifiers** — Shift/Ctrl/Opt/Cmd stay active for next key
 - **Key repeat** — hold any key for auto-repeat (400ms delay, 60ms interval)
-- **Context strip** — quick-access: esc, F1-F5, commit, diff, plan, Ctrl+C
+- **Context strip** — quick-access: Esc, F1–F5, commit, diff, plan, Ctrl+C
 - **6 skins** — iOS Terminal, MacBook Silver, Gamer RGB, Custom Painted, Amber Retro, Ice White
 
-### Connectivity & Multi-Machine
-- **3-tier tunnel fallback** — ngrok, localhost.run SSH, local Wi-Fi
-- **Zero-config start** — works immediately with SSH tunnel (no signup needed)
-- **Static URL with ngrok** — same URL every time for PWA home screen
+### Connectivity
+- **3-tier tunnel fallback** — ngrok → SSH (localhost.run) → local Wi-Fi
+- **Zero-config start** — works immediately; SSH tunnel needs no signup
+- **Static URL with ngrok** — same URL every time, bookmarkable for PWA
 - **Auto-recovery** — tunnel recreates after sleep/wake
-- **One-click auth URL** — token embedded in URL; share with any device, no re-scanning
-- **Multi-machine** — each Mac runs its own agent; bookmark multiple URLs for different machines
-- **Connection panel** — shows live tunnel mode, copyable auth URL, ngrok setup guide, stop instructions
+- **One-click auth URL** — token embedded in URL, share with any device
+- **Connection panel** — shows live tunnel mode, copyable auth URL, ngrok setup, stop instructions
+
+---
+
+## Multi-Machine
+
+Run termora on multiple machines. Access all of them from your phone.
+
+**On each machine:**
+
+```bash
+git clone https://github.com/royaluniondesign-sys/termora.git
+cd termora && npm install && npm run dev
+```
+
+Each instance generates its own QR code and auth URL. Bookmark each URL in your phone's browser or add each as a separate PWA — you'll have a separate icon per machine.
+
+**With ngrok static domains** (optional):
+
+```bash
+# Machine A
+NGROK_STATIC_DOMAIN=macbook.ngrok-free.dev npm run dev
+
+# Machine B
+NGROK_STATIC_DOMAIN=server.ngrok-free.dev npm run dev
+```
+
+Same URL every time per machine. No re-scanning after restarts.
+
+---
+
+## Session Persistence
+
+When tmux is installed, termora automatically wraps sessions in tmux control mode. Sessions survive server restarts with full scrollback history.
+
+```bash
+brew install tmux    # macOS
+sudo apt install tmux  # Ubuntu/Debian
+```
+
+No configuration needed. termora auto-detects tmux and enables persistence.
+
+---
+
+## Configuration
+
+Create a `.env` file in the project root (all optional):
+
+```bash
+NGROK_AUTHTOKEN=your_token            # Get free at ngrok.com
+NGROK_STATIC_DOMAIN=your.ngrok-free.dev  # Free static domain from ngrok dashboard
+TERMORA_PORT=4030                     # Default: 4030
+TERMORA_NO_TMUX=1                     # Disable tmux integration
+TERMORA_NO_OPEN=1                     # Don't auto-open browser
+TUNNEL=ssh                            # Force SSH tunnel (skip ngrok)
+```
+
+**Get a free ngrok static URL:**
+```bash
+brew install ngrok
+ngrok config add-authtoken YOUR_TOKEN
+# Then add NGROK_AUTHTOKEN + NGROK_STATIC_DOMAIN to .env
+```
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|------------|
+|-------|-----------|
 | Frontend | React 18, TypeScript, Vite 6, Tailwind CSS v4, xterm.js (WebGL) |
 | Backend | Node.js 20+, Express, ws, node-pty, tmux (control mode), better-sqlite3 |
 | Tunnel | @ngrok/ngrok SDK, localhost.run (SSH fallback) |
@@ -163,45 +240,26 @@ Found a vulnerability? See [SECURITY.md](SECURITY.md) for our disclosure policy.
 
 ```
 termora/
-+-- packages/
-|   +-- agent/     # Backend: Express + WebSocket + node-pty + auth + tunnel
-|   +-- web/       # Frontend: React + xterm.js + Tailwind + keyboard system
-|   +-- cli/       # CLI wrapper (future)
-+-- assets/        # Logo and media
-+-- docs/images/   # Screenshots
+├── packages/
+│   ├── agent/     # Backend: Express + WebSocket + node-pty + auth + tunnel
+│   ├── web/       # Frontend: React + xterm.js + Tailwind + keyboard system
+│   └── cli/       # CLI wrapper (future)
+└── assets/        # Logo and banner
 ```
 
-## Configuration
+---
 
-Create a `.env` file in the project root (optional):
+## Security Policy
 
-```bash
-NGROK_AUTHTOKEN=your_token
-NGROK_STATIC_DOMAIN=your-subdomain.ngrok-free.dev
-TERMORA_PORT=4030
-TERMORA_NO_TMUX=1
-TERMORA_NO_OPEN=1
-TUNNEL=ssh
-```
-
-## Session Persistence
-
-When tmux is installed, termora automatically wraps sessions in tmux using **control mode** (`-CC`). Sessions survive server restarts with full scrollback history.
-
-```bash
-brew install tmux    # macOS
-sudo apt install tmux  # Ubuntu/Debian
-```
-
-No configuration needed. termora auto-detects tmux and enables persistence.
+Found a vulnerability? See [SECURITY.md](SECURITY.md) for our responsible disclosure policy.
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## Support the Project
 
-termora is open source and free. If it's useful to you:
+termora is open source and free.
 
 - Star this repo
 - [Sponsor on GitHub](https://github.com/sponsors/royaluniondesign-sys)
@@ -215,8 +273,6 @@ MIT — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-<img src="assets/termora-logo.svg" alt="termora" width="32" />
-
-Made by **[RUD](https://github.com/royaluniondesign-sys)** · Star this repo if termora is useful to you
+Made by **[RUD](https://github.com/royaluniondesign-sys)** · Star if termora is useful to you
 
 </div>
