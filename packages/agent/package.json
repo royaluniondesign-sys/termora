@@ -1,6 +1,6 @@
 {
   "name": "@termora/agent",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "termora local agent — PTY manager, WebSocket server, auth, and ngrok tunnel",
   "license": "MIT",
   "repository": {

@@ -21,9 +21,11 @@ export interface Session {
 
 // ── Views ─────────────────────────────────────────────────────────────────────
 
-export type View = 'grid' | 'terminal' | 'skin-studio' | 'reconnect';
+export type View = 'grid' | 'terminal' | 'skin-studio' | 'reconnect' | 'tunnels';
 
 // ── Keyboard Skins ────────────────────────────────────────────────────────────
+
+export type KeyboardMode = 'custom' | 'system' | 'physical';
 
 export type SkinId =
   | 'macbook-silver'
@@ -80,7 +82,11 @@ export interface TerminalViewProps {
   onRenameSession: (sessionId: string, name: string) => void;
   skin: SkinId;
   perKeyColors: PerKeyColors;
+  keyboardMode: KeyboardMode;
+  onKeyboardModeChange: (mode: KeyboardMode) => void;
+  latencyMs?: number | null;
 }
+
 
 export interface MacBookKeyboardProps {
   onKey: (data: string) => void;    // sends escape sequence or char to terminal

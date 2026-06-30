@@ -1,36 +1,60 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 
 /* Anthropic official font families (woff2 from anthropic.com CDN) */
 @font-face { font-family: 'Anthropic Sans'; src: url('/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Anthropic Sans'; src: url('/fonts/AnthropicSans-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
-@font-face { font-family: 'Anthropic Serif'; src: url('/fonts/AnthropicSerif-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Anthropic Serif'; src: url('/fonts/AnthropicSerif-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
 @font-face { font-family: 'Anthropic Mono'; src: url('/fonts/AnthropicMono-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Anthropic Mono'; src: url('/fonts/AnthropicMono-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
-/* Styrene A — Anthropic's heading font (otf) */
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Styrene A'; src: url('/fonts/StyreneA-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
 
 @theme {
-  /* Anthropic palette */
-  --color-termora-orange: #d97757;
-  --color-termora-orange-dim: #c46a4d;
-  --color-termora-orange-bright: #e8856a;
-  --color-termora-bg: #141413;
-  --color-termora-surface: #1e1d1b;
-  --color-termora-surface-2: #282725;
-  --color-termora-surface-3: #33312f;
-  --color-termora-border: #3a3835;
-  --color-termora-border-light: #4a4845;
-  --color-termora-light: #faf9f5;
-  --color-termora-light-gray: #e8e6dc;
-  --color-termora-mid: #b0aea5;
-  --color-termora-text-muted: #78756f;
-  --color-termora-green: #788c5d;
-  --color-termora-blue: #6a9bcc;
-  /* Legacy aliases for components still using old names */
-  --color-termora-gold: #d97757;
+  /* ── Obsidian Design System ───────────────────────────────────────────────── */
+  /* Primary accent — Soft Violet */
+  --color-obsidian-primary: #a78bfa;
+  --color-obsidian-primary-dim: #8b5cf6;
+  --color-obsidian-primary-bright: #c4b5fd;
+
+  /* Backgrounds — True near-black zinc scale */
+  --color-obsidian-bg: #09090b;
+  --color-obsidian-surface: #0c0c0f;
+  --color-obsidian-surface-2: #18181b;
+  --color-obsidian-surface-3: #27272a;
+  --color-obsidian-surface-4: #3f3f46;
+
+  /* Borders */
+  --color-obsidian-border: #27272a;
+  --color-obsidian-border-light: #3f3f46;
+
+  /* Text */
+  --color-obsidian-text: #fafafa;
+  --color-obsidian-text-2: #a1a1aa;
+  --color-obsidian-text-3: #71717a;
+
+  /* States */
+  --color-obsidian-success: #34d399;
+  --color-obsidian-success-dim: #10b981;
+  --color-obsidian-error: #ef4444;
+  --color-obsidian-warning: #fbbf24;
+
+  /* Legacy aliases — keeping these so existing components don't break */
+  --color-termora-orange: #a78bfa;
+  --color-termora-orange-dim: #8b5cf6;
+  --color-termora-orange-bright: #c4b5fd;
+  --color-termora-bg: #09090b;
+  --color-termora-surface: #0c0c0f;
+  --color-termora-surface-2: #18181b;
+  --color-termora-surface-3: #27272a;
+  --color-termora-border: #27272a;
+  --color-termora-border-light: #3f3f46;
+  --color-termora-light: #fafafa;
+  --color-termora-light-gray: #e4e4e7;
+  --color-termora-mid: #a1a1aa;
+  --color-termora-text-muted: #71717a;
+  --color-termora-green: #34d399;
+  --color-termora-blue: #60a5fa;
+  --color-termora-gold: #a78bfa;
 }
 
 @keyframes notch-pulse {
@@ -38,21 +62,26 @@
   50% { opacity: 0.3; }
 }
 
+@keyframes violet-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(167, 139, 250, 0); }
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--color-termora-bg);
+  background: var(--color-obsidian-bg);
   font-family:
+    'Geist',
     'Anthropic Sans',
-    'Styrene A',
     -apple-system,
     BlinkMacSystemFont,
     'Helvetica Neue',
     sans-serif;
   height: 100dvh;
   overflow: hidden;
-  color: var(--color-termora-light);
+  color: var(--color-obsidian-text);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -76,25 +105,25 @@ body {
 
 [data-skin],
 [data-skin="macbook-silver"] {
-  --kbd-bg: #1e1d1b;
-  --key-face: #282725;
-  --key-border: #3a3835;
-  --key-side: #141413;
-  --key-label: #b0aea5;
-  --key-label-shift: #78756f;
-  --key-hover: #33312f;
-  --key-active: #1e1d1b;
+  --kbd-bg: #18181b;
+  --key-face: #27272a;
+  --key-border: #3f3f46;
+  --key-side: #09090b;
+  --key-label: #a1a1aa;
+  --key-label-shift: #71717a;
+  --key-hover: #3f3f46;
+  --key-active: #18181b;
 }
 
 [data-skin="ios-terminal"] {
-  --kbd-bg: #1e1d1b;
-  --key-face: #33312f;
-  --key-border: #4a4845;
-  --key-side: #1e1d1b;
-  --key-label: #faf9f5;
-  --key-label-shift: #b0aea5;
-  --key-hover: #4a4845;
-  --key-active: #282725;
+  --kbd-bg: #18181b;
+  --key-face: #27272a;
+  --key-border: #3f3f46;
+  --key-side: #18181b;
+  --key-label: #fafafa;
+  --key-label-shift: #a1a1aa;
+  --key-hover: #3f3f46;
+  --key-active: #27272a;
 }
 
 [data-skin="gamer-rgb"] {
@@ -109,36 +138,36 @@ body {
 }
 
 [data-skin="custom-painted"] {
-  --kbd-bg: #1e1d1b;
-  --key-face: #282725;
-  --key-border: #3a3835;
-  --key-side: #141413;
-  --key-label: #d97757;
-  --key-label-shift: #c46a4d;
-  --key-hover: #33312f;
-  --key-active: #1e1d1b;
+  --kbd-bg: #18181b;
+  --key-face: #27272a;
+  --key-border: #3f3f46;
+  --key-side: #09090b;
+  --key-label: #a78bfa;
+  --key-label-shift: #8b5cf6;
+  --key-hover: #3f3f46;
+  --key-active: #18181b;
 }
 
 [data-skin="amber-retro"] {
-  --kbd-bg: #141413;
-  --key-face: #1e1d1b;
-  --key-border: #3a3835;
-  --key-side: #141413;
+  --kbd-bg: #09090b;
+  --key-face: #18181b;
+  --key-border: #27272a;
+  --key-side: #09090b;
   --key-label: #c87700;
   --key-label-shift: #996000;
-  --key-hover: #282725;
-  --key-active: #1e1d1b;
+  --key-hover: #27272a;
+  --key-active: #18181b;
 }
 
 [data-skin="ice-white"] {
-  --kbd-bg: #e8e6dc;
-  --key-face: #faf9f5;
-  --key-border: #d0cec5;
-  --key-side: #b0aea5;
-  --key-label: #141413;
-  --key-label-shift: #78756f;
+  --kbd-bg: #e4e4e7;
+  --key-face: #fafafa;
+  --key-border: #d4d4d8;
+  --key-side: #a1a1aa;
+  --key-label: #09090b;
+  --key-label-shift: #71717a;
   --key-hover: #ffffff;
-  --key-active: #e8e6dc;
+  --key-active: #e4e4e7;
 }
 
 /* ── Gamer RGB animation ──────────────────────────────────────────────────── */
@@ -160,6 +189,21 @@ body {
 @keyframes rgb-cycle {
   0%   { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
 }
 
 [data-skin="gamer-rgb"] [data-kbd] {
@@ -193,3 +237,15 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Obsidian focus ring ──────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #a78bfa; }

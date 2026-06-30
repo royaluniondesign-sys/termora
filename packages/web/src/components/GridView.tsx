@@ -2,10 +2,12 @@ import type { GridViewProps } from '../lib/types';
 import { SessionCard } from './SessionCard';
 import { NewSessionCard } from './NewSessionCard';
 
-/**
- * Session grid — shows active sessions as cards.
- * Nav and switcher are in App.tsx, this is just the content.
- */
+const S = {
+  primary: '#a78bfa',
+  text3: '#71717a',
+  bg: '#09090b',
+} as const;
+
 export function GridView({
   sessions,
   activeSessionId,
@@ -14,31 +16,28 @@ export function GridView({
   onCloseSession,
 }: GridViewProps) {
   return (
-    <div style={{ padding: 12, userSelect: 'none' }}>
-      {/* Section label */}
+    <div style={{ padding: 12, userSelect: 'none', animation: 'fade-in-up 200ms ease-out' }}>
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 10,
       }}>
         <span style={{
           fontSize: 10, fontWeight: 600, letterSpacing: 1,
-          color: '#78756f', textTransform: 'uppercase' as const,
+          color: S.text3, textTransform: 'uppercase' as const,
         }}>
           Active Sessions
         </span>
         <span style={{
-          background: '#d97757', color: '#141413',
+          background: `${S.primary}20`, color: S.primary,
+          border: `1px solid ${S.primary}44`,
           fontSize: 10, fontWeight: 700,
-          padding: '2px 7px', borderRadius: 8,
+          padding: '2px 8px', borderRadius: 6,
         }}>
           {sessions.length}
         </span>
       </div>
 
-      {/* Card grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
         {sessions.map((session) => (
           <SessionCard
             key={session.id}

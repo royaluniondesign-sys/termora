@@ -1,29 +1,30 @@
 import type { ITheme } from '@xterm/xterm';
 
 /**
- * termora terminal theme — Anthropic warm dark palette.
- * Background #141413, cursor #d97757 (Anthropic orange).
+ * Termora Obsidian — high-contrast dark terminal theme.
+ * Near-black background #09090b, violet cursor #a78bfa.
  */
 export const TERMORA_THEME: ITheme = {
-  background: '#141413',
-  foreground: '#e8e6dc',
-  cursor: '#d97757',
-  cursorAccent: '#141413',
-  selectionBackground: '#d9775740',
-  black: '#282725',
-  red: '#e87c6a',
-  green: '#788c5d',
-  yellow: '#e8c468',
-  blue: '#6a9bcc',
-  magenta: '#b07ab0',
-  cyan: '#5ca8a8',
-  white: '#e8e6dc',
-  brightBlack: '#4a4845',
-  brightRed: '#e8856a',
-  brightGreen: '#8da070',
-  brightYellow: '#ecd080',
-  brightBlue: '#7cb4e8',
-  brightMagenta: '#c090c0',
-  brightCyan: '#70baba',
-  brightWhite: '#faf9f5',
+  background: '#09090b',
+  foreground: '#e4e4e7',
+  cursor: '#a78bfa',
+  cursorAccent: '#09090b',
+  selectionBackground: '#a78bfa33',
+  selectionForeground: '#fafafa',
+  black: '#27272a',
+  red: '#ef4444',
+  green: '#34d399',
+  yellow: '#fbbf24',
+  blue: '#60a5fa',
+  magenta: '#a78bfa',
+  cyan: '#22d3ee',
+  white: '#e4e4e7',
+  brightBlack: '#3f3f46',
+  brightRed: '#f87171',
+  brightGreen: '#6ee7b7',
+  brightYellow: '#fde68a',
+  brightBlue: '#93c5fd',
+  brightMagenta: '#c4b5fd',
+  brightCyan: '#67e8f9',
+  brightWhite: '#fafafa',
 };
