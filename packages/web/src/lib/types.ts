@@ -21,7 +21,7 @@ export interface Session {
 
 // ── Views ─────────────────────────────────────────────────────────────────────
 
-export type View = 'grid' | 'terminal' | 'skin-studio' | 'reconnect' | 'tunnels';
+export type View = 'dashboard' | 'terminal' | 'tunnels' | 'settings' | 'reconnect';
 
 // ── Keyboard Skins ────────────────────────────────────────────────────────────
 
@@ -76,7 +76,6 @@ export interface TerminalViewProps {
   getSessionOutput: (sessionId: string) => string[];
   /** Called when user navigates back; snapshot is the xterm screen capture */
   onBack: (snapshot: string) => void;
-  onOpenSkinStudio: () => void;
   onOpenSettings: () => void;
   /** Renames the current session */
   onRenameSession: (sessionId: string, name: string) => void;
