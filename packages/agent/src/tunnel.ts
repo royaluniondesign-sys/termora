@@ -4,7 +4,7 @@ import ngrok from '@ngrok/ngrok';
 // @ts-expect-error -- qrcode-terminal has no type declarations
 import qrcode from 'qrcode-terminal';
 
-export type TunnelMethod = 'ngrok' | 'ssh' | 'local';
+export type TunnelMethod = 'cloudflared' | 'ngrok' | 'ssh' | 'local';
 
 export interface TunnelResult {
   url: string;
@@ -13,6 +13,7 @@ export interface TunnelResult {
 
 let activeNgrokListener: ngrok.Listener | null = null;
 let activeSSHProcess: ChildProcess | null = null;
+let activeCloudflaredProcess: ChildProcess | null = null;
 
 // Tunnel state for monitoring and recovery
 interface TunnelConfig {
@@ -41,6 +42,56 @@ function getLocalIP(): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Creates a public tunnel via cloudflared quick tunnel.
+ * No account, no bandwidth limits, no auth token required.
+ * Requires cloudflared to be installed (brew install cloudflared).
+ */
+function createCloudflaredTunnel(localPort: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const cf = spawn('/opt/homebrew/bin/cloudflared', [
+      'tunnel', '--url', `http://localhost:${localPort}`, '--no-autoupdate',
+    ]);
+
+    activeCloudflaredProcess = cf;
+
+    const urlPattern = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/;
+    let resolved = false;
+
+    const tryResolve = (data: Buffer) => {
+      if (resolved) return;
+      const match = urlPattern.exec(data.toString());
+      if (match) {
+        resolved = true;
+        resolve(match[0]);
+      }
+    };
+
+    cf.stderr.on('data', tryResolve);
+    cf.stdout.on('data', tryResolve);
+
+    cf.on('error', (err) => {
+      if (!resolved) reject(err);
+    });
+
+    cf.on('close', (code) => {
+      activeCloudflaredProcess = null;
+      if (!resolved) {
+        reject(new Error(`cloudflared exited with code ${String(code)}`));
+      } else {
+        tunnelDead = true;
+      }
+    });
+
+    setTimeout(() => {
+      if (!resolved) {
+        cf.kill();
+        reject(new Error('cloudflared tunnel timed out after 20s'));
+      }
+    }, 20_000);
+  });
 }
 
 /**
@@ -110,14 +161,33 @@ export async function createTunnel(
   port: number,
   ngrokAuthtoken?: string,
   ngrokStaticDomain?: string,
-  forcedMethod?: 'ngrok' | 'ssh' | 'local',
+  forcedMethod?: 'cloudflared' | 'ngrok' | 'ssh' | 'local',
 ): Promise<TunnelResult> {
   // Store config for recreation on tunnel death
   savedConfig = { port, ngrokAuthtoken, ngrokStaticDomain, forcedMethod };
   tunnelDead = false;
 
-  // 1. ngrok — best reliability, optional free-account token
-  if (forcedMethod !== 'ssh' && forcedMethod !== 'local' && ngrokAuthtoken) {
+  // Shortcut: forced local
+  if (forcedMethod === 'local') {
+    const localIp = getLocalIP();
+    const url = localIp ? `http://${localIp}:${port}` : `http://localhost:${port}`;
+    currentTunnel = { url, method: 'local' };
+    return currentTunnel;
+  }
+
+  // 1. cloudflared — free, no account, no bandwidth limits
+  if (forcedMethod !== 'ngrok' && forcedMethod !== 'ssh') {
+    try {
+      const url = await createCloudflaredTunnel(port);
+      currentTunnel = { url, method: 'cloudflared' };
+      return currentTunnel;
+    } catch {
+      // cloudflared not installed or failed — try ngrok
+    }
+  }
+
+  // 2. ngrok — needs NGROK_AUTHTOKEN, has bandwidth limits on free tier
+  if (forcedMethod !== 'ssh' && ngrokAuthtoken) {
     try {
       const ngrokOpts: Parameters<typeof ngrok.forward>[0] = {
         addr: port,
@@ -136,13 +206,7 @@ export async function createTunnel(
     }
   }
 
-  // 2. localhost.run via SSH (pre-installed on macOS, no account needed)
-  if (forcedMethod === 'local') {
-    const localIp = getLocalIP();
-    const url = localIp ? `http://${localIp}:${port}` : `http://localhost:${port}`;
-    currentTunnel = { url, method: 'local' };
-    return currentTunnel;
-  }
+  // 3. localhost.run via SSH (pre-installed on macOS, no account needed)
   try {
     const url = await createSSHTunnel(port);
     currentTunnel = { url, method: 'ssh' };
@@ -151,7 +215,7 @@ export async function createTunnel(
     // SSH failed — fall back to local
   }
 
-  // 3. Local network — works on same Wi-Fi, no internet required
+  // 4. Local network — works on same Wi-Fi, no internet required
   const localIp = getLocalIP();
   const url = localIp ? `http://${localIp}:${port}` : `http://localhost:${port}`;
   currentTunnel = { url, method: 'local' };
@@ -204,7 +268,11 @@ export function printAccessInfo(
     console.log('');
     console.log(`${o}  URL:   ${r}${publicUrl}`);
     console.log(`${o}  Token: ${r}${bootstrapToken}`);
-    console.log(`${o}  Mode:  ${r}${method === 'ngrok' ? 'remote (ngrok)' : method === 'ssh' ? 'remote (ssh)' : 'local Wi-Fi only'}`);
+    const modeLabel = method === 'cloudflared' ? 'remote (cloudflared)'
+      : method === 'ngrok' ? 'remote (ngrok)'
+      : method === 'ssh' ? 'remote (ssh)'
+      : 'local Wi-Fi only';
+    console.log(`${o}  Mode:  ${r}${modeLabel}`);
     if (method === 'local') {
       console.log('');
       console.log(`${o}  ⚠  Local mode — phone must be on same Wi-Fi.${r}`);
@@ -315,6 +383,10 @@ export function startTunnelMonitor(
  * Closes any active tunnels (ngrok listener and/or SSH process).
  */
 export async function closeTunnel(): Promise<void> {
+  if (activeCloudflaredProcess) {
+    activeCloudflaredProcess.kill();
+    activeCloudflaredProcess = null;
+  }
   if (activeNgrokListener) {
     try { await ngrok.disconnect(); } catch { /* ignore */ }
     activeNgrokListener = null;

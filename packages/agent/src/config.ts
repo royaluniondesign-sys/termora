@@ -20,9 +20,9 @@ export interface AgentConfig {
    *  Free ngrok accounts get one static domain — set NGROK_STATIC_DOMAIN
    *  in .env to keep the same URL across restarts. */
   ngrokStaticDomain: string | undefined;
-  /** Force a specific tunnel method: 'ngrok', 'ssh', or 'local'.
-   *  If unset, auto-detects (ngrok → ssh → local). Set TUNNEL=ssh to skip ngrok. */
-  tunnelMethod: 'ngrok' | 'ssh' | 'local' | undefined;
+  /** Force a specific tunnel method: 'cloudflared', 'ngrok', 'ssh', or 'local'.
+   *  If unset, auto-detects (cloudflared → ngrok → ssh → local). */
+  tunnelMethod: 'cloudflared' | 'ngrok' | 'ssh' | 'local' | undefined;
   resendApiKey: string | undefined;
   dbPath: string;
   /** Set TERMORA_NO_TMUX=1 to disable tmux session persistence even when tmux is available. */

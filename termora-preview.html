@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>termora — by RUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Styrene A — loaded from termora project fonts */
+  @font-face { font-family: 'Anthropic Sans', 'Styrene A'; src: url('termora/packages/web/public/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Anthropic Sans', 'Styrene A'; src: url('termora/packages/web/public/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Anthropic Sans', 'Styrene A'; src: url('termora/packages/web/public/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Anthropic Sans', 'Styrene A'; src: url('termora/packages/web/public/fonts/AnthropicSans-Roman.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+
+  :root {
+    --font-sans: 'Anthropic Sans', 'Styrene A', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    --font-mono: 'Fira Code', 'SF Mono', 'Menlo', monospace;
+    --dark: #141413; --light: #faf9f5; --mid: #b0aea5; --light-gray: #e8e6dc;
+    --orange: #d97757; --orange-dim: #c46a4d; --orange-bright: #e8856a;
+    --blue: #6a9bcc; --green: #788c5d;
+    --bg: #141413; --surface: #1e1d1b; --surface-2: #282725; --surface-3: #33312f;
+    --border: #3a3835; --border-light: #4a4845;
+    --text-1: #faf9f5; --text-2: #b0aea5; --text-3: #78756f;
+    --radius: 8px; --radius-lg: 12px; --ease: 200ms ease-out;
+  }
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text-1);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;line-height:1.6}
+  button,[role="button"]{cursor:pointer;touch-action:manipulation}
+  :focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-radius:4px}
+
+  .hero{text-align:center;padding:64px 20px 32px;position:relative}
+  .hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(217,119,87,0.08) 0%,transparent 70%);pointer-events:none}
+  .logo{margin:0 auto 16px;width:80px;height:80px}
+  .hero h1{font-family:var(--font-sans);font-size:44px;font-weight:700;letter-spacing:-1.5px;line-height:1;color:var(--text-1)}
+  .hero .by{font-size:11px;font-weight:600;color:var(--orange);letter-spacing:2.5px;text-transform:uppercase;margin-top:6px}
+  .hero .tagline{font-size:18px;font-weight:300;color:var(--text-2);margin-top:10px}
+  .hero .desc{font-size:13px;color:var(--text-3);margin-top:6px;max-width:340px;margin-inline:auto;line-height:1.7}
+
+  .sw{display:flex;gap:2px;justify-content:center;margin:24px auto;background:var(--surface);border-radius:var(--radius);padding:3px;width:fit-content;border:1px solid var(--border)}
+  .sw button{min-height:44px;padding:0 18px;border-radius:6px;border:none;background:transparent;color:var(--text-3);font-family:inherit;font-size:13px;font-weight:500;transition:all var(--ease)}
+  .sw button.on{background:var(--orange);color:var(--dark)}
+  .sw button:hover:not(.on){color:var(--text-1)}
+
+  .pw{display:flex;justify-content:center;padding:0 16px}
+  .ph{width:375px;max-width:100%;border:2px solid var(--border);border-radius:36px;background:var(--surface);overflow:hidden;position:relative;box-shadow:0 20px 50px rgba(0,0,0,0.4),0 0 60px rgba(217,119,87,0.06)}
+  .notch{width:100px;height:28px;background:var(--bg);border-radius:0 0 14px 14px;margin:0 auto;position:relative;z-index:10}
+  .notch-d{width:5px;height:5px;border-radius:50%;background:var(--orange);position:absolute;right:14px;top:11px;animation:pulse 2.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .sb{display:flex;justify-content:space-between;padding:3px 18px;font-size:11px;font-weight:600;color:var(--text-3)}
+
+  .nv{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border)}
+  .nv-l{display:flex;align-items:center;gap:8px}
+  .nv-logo{width:28px;height:28px}
+  .nv-nm{font-size:14px;font-weight:700;letter-spacing:-.3px}
+  .live{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:var(--green);background:rgba(120,140,93,0.12);padding:2px 7px;border-radius:6px}
+  .live .d{width:4px;height:4px;background:var(--green);border-radius:50%}
+  .nv-r{display:flex;gap:6px}
+  .nv-b{width:32px;height:32px;min-height:44px;min-width:44px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-2);padding:0;transition:all var(--ease)}
+  .nv-b:hover{border-color:var(--orange);color:var(--orange)}
+  .nv-b svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .tabs{display:flex;gap:2px;padding:6px 10px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .t{flex-shrink:0;min-height:34px;padding:0 11px;border-radius:7px;font-size:11px;font-weight:500;color:var(--text-3);display:flex;align-items:center;gap:5px;border:1px solid transparent;transition:all var(--ease);cursor:pointer}
+  .t.on{background:rgba(217,119,87,0.12);color:var(--orange-bright);border-color:rgba(217,119,87,0.2)}
+  .t .sd{width:5px;height:5px;border-radius:50%}
+
+  .tm{padding:8px 12px;font-family:var(--font-mono);font-size:11px;line-height:1.65;background:var(--bg);height:250px;overflow-y:auto}
+  .tm .p{color:var(--orange)} .tm .c{color:var(--light)} .tm .o{color:var(--text-3)} .tm .g{color:var(--green)} .tm .b{color:var(--blue)} .tm .y{color:#d4a844}
+  .tm .d{color:var(--text-3);font-size:9.5px;margin-left:10px}
+  .cur{display:inline-block;width:7px;height:13px;background:var(--orange);border-radius:1px;animation:blink 1.2s step-end infinite;vertical-align:text-bottom}
+  @keyframes blink{50%{opacity:0}}
+
+  .tb-wrap{display:flex;gap:3px;padding:5px 6px;background:var(--surface);border-top:1px solid var(--border)}
+  .tb{flex:1;min-height:44px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-family:inherit;font-size:10px;font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:all 100ms ease-out;padding:4px 0}
+  .tb:active{background:var(--orange);color:var(--dark);transform:scale(.95)}
+  .tb.hl{color:var(--orange-bright);border-color:rgba(217,119,87,0.2)}
+  .tb svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .qs{display:flex;gap:4px;padding:4px 6px;background:var(--surface);overflow-x:auto;scrollbar-width:none}
+  .qs::-webkit-scrollbar{display:none}
+  .q{flex-shrink:0;min-height:26px;padding:0 8px;border-radius:5px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-3);font-family:var(--font-mono);font-size:10px;display:flex;align-items:center;cursor:pointer;transition:all var(--ease)}
+  .q.on{background:var(--orange);color:var(--dark);border-color:var(--orange)}
+
+  .kb{background:var(--surface);padding:4px 3px 14px;border-top:1px solid var(--border)}
+  .kr{display:flex;gap:3px;margin-bottom:3px;justify-content:center}
+  .k{min-height:36px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border);color:var(--light-gray);font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex:1;max-width:33px;font-family:inherit;transition:all 100ms ease-out;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .k:active{background:var(--orange);color:var(--dark);transform:scale(.93)}
+  .k.m{background:var(--surface);color:var(--text-3);font-size:10px;font-weight:600;max-width:40px}
+  .k.m.on{background:var(--orange);color:var(--dark)}
+  .k.sp{max-width:140px;flex:4}
+  .k.ret{max-width:54px;background:var(--orange);color:var(--dark);font-size:10px;font-weight:600;border-color:var(--orange-dim)}
+  .k.sm{max-width:27px;font-size:11px}
+
+  .gv{display:none;padding:10px}
+  .gv.show{display:block}
+  .gv-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .gv-h span{font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:1px}
+  .gv-h .cnt{background:var(--orange);color:var(--dark);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+  .cg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .cd{background:var(--surface-2);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all var(--ease)}
+  .cd:hover{border-color:var(--orange);transform:translateY(-1px)}
+  .cd.act{border-color:var(--orange)}
+  .cd-h{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;background:var(--surface-3)}
+  .cd-h .n{font-size:10px;font-weight:600}
+  .cd-h .badge{font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px;text-transform:uppercase}
+  .b-r{background:rgba(120,140,93,0.12);color:var(--green)}
+  .b-i{background:rgba(176,174,165,0.12);color:var(--text-3)}
+  .cd-b{padding:6px 9px;height:65px;font-family:var(--font-mono);font-size:7.5px;line-height:1.4;color:var(--text-3);overflow:hidden;position:relative}
+  .cd-b::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(transparent,var(--surface-2))}
+  .cd-new{border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;min-height:96px;background:transparent}
+  .cd-new:hover{border-color:var(--orange)}
+
+  .rv{display:none}
+  .rv.show{display:flex;flex-direction:column;align-items:center;justify-content:center;height:440px;gap:14px;padding:0 36px}
+  .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .rv h3{font-size:16px;font-weight:700}
+  .rv .att{font-size:12px;color:var(--text-3)}
+  .pbar{width:160px;height:3px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+  .pf{height:100%;background:var(--orange);border-radius:2px;width:40%;animation:prog 2s ease-in-out infinite}
+  @keyframes prog{0%{width:10%}50%{width:60%}100%{width:30%}}
+  .rv .safe{font-size:10px;color:var(--text-3);display:flex;align-items:center;gap:5px;margin-top:6px}
+  .rv .safe svg{width:14px;height:14px;color:var(--green);stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .abtn{display:flex;gap:8px;margin-top:10px}
+  .bg{min-height:44px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text-3);font-family:inherit;font-size:12px;font-weight:500;transition:all var(--ease)}
+  .bg:hover{border-color:var(--text-2);color:var(--text-1)}
+  .ba{min-height:44px;padding:0 16px;border-radius:var(--radius);border:none;background:var(--orange);color:var(--dark);font-family:inherit;font-size:12px;font-weight:600;transition:all var(--ease)}
+  .ba:hover{background:var(--orange-bright)}
+
+  .fs{max-width:640px;margin:48px auto;padding:0 16px}
+  .fs h2{font-family:var(--font-sans);text-align:center;font-size:24px;font-weight:700;letter-spacing:-0.5px}
+  .fs .sub{text-align:center;font-size:13px;color:var(--text-3);margin-bottom:24px}
+  .fg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:600px){.fg{grid-template-columns:1fr}}
+  .ft{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;cursor:pointer;transition:all var(--ease)}
+  .ft:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.25)}
+  .ft-i{width:36px;height:36px;border-radius:var(--radius);background:rgba(217,119,87,0.1);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .ft-i svg{width:18px;height:18px;color:var(--orange);stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .ft h4{font-size:11px;font-weight:700;color:var(--orange-bright);margin-bottom:3px}
+  .ft p{font-size:10px;color:var(--text-3);line-height:1.6}
+
+  .ss{max-width:520px;margin:32px auto;padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-align:center}
+  .ss h3{font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}
+  .ss h3 svg{width:18px;height:18px;color:var(--orange);stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .ss .sub{font-size:11px;color:var(--text-3);margin:3px 0 12px}
+  .sc{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .si{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-2)}
+  .si svg{width:12px;height:12px;color:var(--green);stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  .ftr{text-align:center;padding:32px 16px 40px;border-top:1px solid var(--border);margin-top:32px}
+  .ftr-r{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:4px}
+  .ftr-logo{width:20px;height:20px}
+  .ftr .nm{font-size:13px;font-weight:700;letter-spacing:-.3px}
+  .ftr .cp{font-size:10px;color:var(--text-3);margin-bottom:8px}
+  .ftr-lk{display:flex;gap:12px;justify-content:center}
+  .ftr-lk a{font-size:10px;color:var(--orange);text-decoration:none;font-weight:500}
+  .ftr-lk a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <!-- Chakana logo -->
+  <img class="logo" src="termora/assets/termora-logo.svg" alt="termora" />
+  <h1>termora</h1>
+  <div class="by">by RUD</div>
+  <div class="tagline">Your machine, in your hands.</div>
+  <p class="desc">Real terminal access from your phone. Secure, persistent, zero-lag.</p>
+</div>
+
+<div class="sw" role="tablist">
+  <button class="on" role="tab" onclick="sv('t',this)">Terminal</button>
+  <button role="tab" onclick="sv('g',this)">Dashboard</button>
+  <button role="tab" onclick="sv('r',this)">Reconnect</button>
+</div>
+
+<div class="pw">
+<div class="ph">
+  <div class="notch"><div class="notch-d"></div></div>
+  <div class="sb"><span>9:41</span><span>100%</span></div>
+  <div class="nv">
+    <div class="nv-l">
+      <img class="nv-logo" src="termora/assets/termora-logo.svg" alt="" />
+      <span class="nv-nm">termora</span>
+      <span class="live"><span class="d"></span>LIVE</span>
+    </div>
+    <div class="nv-r">
+      <button class="nv-b" aria-label="Menu"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <button class="nv-b" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
+  </div>
+  <div class="tabs" id="tr">
+    <div class="t on"><span class="sd" style="background:var(--green)"></span>claude-code</div>
+    <div class="t"><span class="sd" style="background:var(--green)"></span>dev-server</div>
+    <div class="t"><span class="sd" style="background:var(--text-3)"></span>git-ops</div>
+    <div class="t" style="color:var(--text-3)"><svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+  </div>
+
+  <!-- Terminal -->
+  <div id="vt">
+    <div class="tm">
+      <div><span class="p">~/projects $</span> <span class="c">claude</span></div>
+      <div><span class="b">Claude Code</span> <span class="o">v1.0.32</span></div>
+      <div style="margin:3px 0"><span class="o">&gt;</span> <span class="c">Fix auth middleware for expired tokens</span></div>
+      <div><span class="y">Reading</span> <span class="o">src/middleware/auth.ts</span></div>
+      <div><span class="g">Editing</span> <span class="o">src/middleware/auth.ts</span></div>
+      <div class="d">+ try { verifyToken(req.headers.authorization) }</div>
+      <div class="d">+ catch (e) { if (e.name === 'TokenExpiredError')</div>
+      <div class="d">+   return res.status(401).json({ expired: true }) }</div>
+      <div style="margin:3px 0"><span class="g">Running</span> <span class="o">npm test -- --grep auth</span></div>
+      <div><span class="g">PASS</span> <span class="o">auth.middleware.test.ts (3 tests)</span></div>
+      <div style="margin:3px 0"><span class="o">&gt;</span> <span class="cur"></span></div>
+    </div>
+    <div class="tb-wrap">
+      <button class="tb hl" aria-label="Select"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>Select</button>
+      <button class="tb" aria-label="Cut"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>Cut</button>
+      <button class="tb hl" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+      <button class="tb hl" aria-label="Paste"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>Paste</button>
+      <button class="tb" aria-label="Tab"><svg viewBox="0 0 24 24"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>Tab</button>
+      <button class="tb" aria-label="History"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Hist</button>
+    </div>
+    <div class="qs">
+      <span class="q">esc</span><span class="q">F1</span><span class="q">F2</span>
+      <span class="q on">Ctrl+C</span><span class="q">commit</span><span class="q">diff</span><span class="q">plan</span>
+    </div>
+    <div class="kb">
+      <div class="kr"><div class="k">1</div><div class="k">2</div><div class="k">3</div><div class="k">4</div><div class="k">5</div><div class="k">6</div><div class="k">7</div><div class="k">8</div><div class="k">9</div><div class="k">0</div></div>
+      <div class="kr"><div class="k">Q</div><div class="k">W</div><div class="k">E</div><div class="k">R</div><div class="k">T</div><div class="k">Y</div><div class="k">U</div><div class="k">I</div><div class="k">O</div><div class="k">P</div></div>
+      <div class="kr"><div class="k">A</div><div class="k">S</div><div class="k">D</div><div class="k">F</div><div class="k">G</div><div class="k">H</div><div class="k">J</div><div class="k">K</div><div class="k">L</div></div>
+      <div class="kr"><div class="k m on">Shift</div><div class="k">Z</div><div class="k">X</div><div class="k">C</div><div class="k">V</div><div class="k">B</div><div class="k">N</div><div class="k">M</div><div class="k m">&#x232B;</div></div>
+      <div class="kr"><div class="k m">Ctrl</div><div class="k m">Opt</div><div class="k sp">space</div><div class="k sm">&#x25C0;</div><div class="k sm">&#x25B6;</div><div class="k ret">return</div></div>
+    </div>
+  </div>
+
+  <!-- Grid/Dashboard -->
+  <div id="vg" class="gv">
+    <div class="gv-h"><span>Active Sessions</span><span class="cnt">3</span></div>
+    <div class="cg">
+      <div class="cd act" tabindex="0"><div class="cd-h"><span class="n">claude-code</span><span class="badge b-r">RUN</span></div><div class="cd-b"><div style="color:var(--orange)">~/projects $</div><div>claude</div><div style="color:var(--blue)">Claude Code v1.0</div><div>> Fix auth...</div><div style="color:var(--green)">PASS 3 tests</div></div></div>
+      <div class="cd" tabindex="0"><div class="cd-h"><span class="n">dev-server</span><span class="badge b-r">RUN</span></div><div class="cd-b"><div style="color:var(--orange)">~/app $</div><div>npm run dev</div><div style="color:var(--green)">ready in 340ms</div><div>Local: http://...</div></div></div>
+      <div class="cd" tabindex="0"><div class="cd-h"><span class="n">git-ops</span><span class="badge b-i">IDLE</span></div><div class="cd-b"><div style="color:var(--orange)">~/projects $</div><div>git log --oneline</div><div>e9fc413 docs: GIF</div><div>df8b565 docs: video</div></div></div>
+      <div class="cd cd-new" tabindex="0" aria-label="New session"><svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--text-3)" fill="none" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+    </div>
+  </div>
+
+  <!-- Reconnect -->
+  <div id="vr" class="rv">
+    <div class="spinner"></div>
+    <h3>Reconnecting...</h3>
+    <span class="att">Attempt 2 of 5</span>
+    <div class="pbar"><div class="pf"></div></div>
+    <span class="safe"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Sessions preserved. No data lost.</span>
+    <div class="abtn"><button class="bg">Cancel</button><button class="ba">Retry Now</button></div>
+  </div>
+</div>
+</div>
+
+<!-- FEATURES -->
+<div class="fs">
+  <h2>Built for real work</h2>
+  <p class="sub">Production-ready terminal access. Secure. Persistent. Zero-lag.</p>
+  <div class="fg">
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v1"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V2a2 2 0 0 0-4 0v9"/><path d="M18 8a2 2 0 0 1 4 0v7a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 16"/></svg></div><h4>Touch Actions</h4><p>Select, copy, paste on terminal. No hidden menus.</p></div>
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div><h4>Zero-Loss Reconnect</h4><p>Close the app, reopen. Everything still there.</p></div>
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.04-.24-.3-.39-.65-.39-1.04 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-5.17-4.49-9-10-9z"/></svg></div><h4>6 Keyboard Skins</h4><p>iOS, MacBook, Gamer RGB, Custom, Retro, Ice.</p></div>
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h4>60fps Terminal</h4><p>Batched output. No lag. Smart backpressure.</p></div>
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h4>Hardened Security</h4><p>Rate limiting, JWT rotation, restrictive CORS.</p></div>
+    <div class="ft" tabindex="0"><div class="ft-i"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div><h4>Real PTY</h4><p>Full zsh/bash. Colors, vim, tmux. Not a simulation.</p></div>
+  </div>
+</div>
+
+<!-- SECURITY -->
+<div class="ss">
+  <h3><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security First</h3>
+  <p class="sub">Security as a core principle, not an afterthought.</p>
+  <div class="sc">
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>JWT 7d rotation</span>
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Rate limiting</span>
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>HTTPS tunnels</span>
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>No cloud data</span>
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Restrictive CORS</span>
+    <span class="si"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Async tmux</span>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ftr">
+  <div class="ftr-r">
+    <img class="ftr-logo" src="termora/assets/termora-logo.svg" alt="termora" />
+    <span class="nm">termora</span>
+  </div>
+  <p class="cp">Your machine, in your hands. Made by <strong style="color:var(--orange)">RUD</strong></p>
+  <div class="ftr-lk"><a href="https://github.com/royaluniondesign-sys/termora">GitHub</a><a href="#">Docs</a><a href="https://ko-fi.com/rudlab">Support</a><a href="#">Security</a></div>
+</div>
+
+<script>
+function sv(v,b){
+  document.getElementById('vt').style.display=v==='t'?'block':'none';
+  document.getElementById('vg').className=v==='g'?'gv show':'gv';
+  document.getElementById('vr').className=v==='r'?'rv show':'rv';
+  document.getElementById('tr').style.display=v==='t'?'flex':'none';
+  document.querySelectorAll('.sw button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+}
+</script>
+</body>
+</html>

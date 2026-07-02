@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "termora-web",
-      "runtimeExecutable": "/usr/bin/python3",
-      "runtimeArgs": ["-m", "http.server", "5555", "--directory", "/Users/oxyzen/termora/packages/web"],
-      "port": 5555
+      "runtimeExecutable": "/opt/homebrew/bin/npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5175"],
+      "port": 5175,
+      "cwd": "/Users/oxyzen/termora/packages/web"
     }
   ]
 }
