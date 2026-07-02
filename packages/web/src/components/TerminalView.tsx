@@ -340,7 +340,7 @@ export function TerminalView({
   latencyMs,
 }: TerminalViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { terminal, write, getDimensions, captureScreen, scrollToBottom } = useTerminal(containerRef, keyboardMode);
+  const { terminal, write, getDimensions, captureScreen, scrollToBottom } = useTerminal(containerRef);
 
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');

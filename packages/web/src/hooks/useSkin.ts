@@ -92,5 +92,7 @@ export function useSkin() {
     document.documentElement.setAttribute('data-skin', skin);
   }, [skin]);
 
-  return { skin, setSkin, perKeyColors, setPerKeyColors } as const;
+  const [keyboardMode, setKeyboardMode] = useState<import('../lib/types').KeyboardMode>('custom');
+
+  return { skin, setSkin, perKeyColors, setPerKeyColors, keyboardMode, setKeyboardMode } as const;
 }
