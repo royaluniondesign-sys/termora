@@ -15,7 +15,7 @@
 
 **Real terminal access from your phone. Not SSH. Not a simulation. A real PTY on your machine, streamed to your pocket.**
 
-[Quickstart](#quickstart) · [How it works](#how-it-works) · [vs. Termux](#termora-vs-termux) · [Security](#security) · [Multi-machine](#multi-machine) · [Contributing](CONTRIBUTING.md)
+[Quickstart](#quickstart) · [How it works](#how-it-works) · [Fan out to parallel agents](#fan-out-to-parallel-agents) · [vs. Termux](#termora-vs-termux) · [Security](#security) · [Multi-machine](#multi-machine) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -145,13 +145,14 @@ termora is hardened at every layer:
 | Layer | Protection |
 |-------|-----------|
 | **Authentication** | One-time bootstrap token (5-min TTL) + 7-day JWT rotation |
+| **Per-device sessions** | Every device that signs in gets its own revocable session — see and sign out any one of them from Settings, independently, without logging out the rest |
 | **Static token** | Persistent auth URL — share once, always works; embedded in QR |
 | **Rate limiting** | Auth endpoints: 10 req/15min per IP (proxy headers trusted only from loopback) |
 | **Transport** | All traffic over HTTPS via the active tunnel |
 | **Token comparison** | Constant-time to prevent timing attacks |
 | **Input validation** | Resize bounds (1–500 cols/rows), stdin capped at 1MB |
 | **Backpressure** | WebSocket buffer limit at 64KB — prevents OOM under load |
-| **CORS** | Restrictive in production — only your tunnel origin |
+| **CORS** | No cross-origin access at all — the app is always same-origin, so nothing needs it |
 | **No cloud storage** | Your data never leaves your machine |
 
 No accounts. No relay servers. No third-party access to your terminal.
@@ -177,21 +178,54 @@ termora is built to feel native, not laggy:
 - **Backpressure management** — WebSocket buffer threshold prevents memory spikes under heavy output
 - **Sub-50ms latency** on local Wi-Fi; performant over HTTPS tunnels
 
-### Claude Code on Your Phone
+### Any CLI Agent, Not Just One
 
 <div align="center">
 <img src="docs/images/claude-code-demo.gif" width="320" alt="Claude Code answering a real question, streamed live through termora" />
 <br /><sub>Real capture — Claude Code running on the host machine, asked a question from termora</sub>
 </div>
 
-termora was built with Claude Code in mind:
+termora was built with Claude Code in mind, but it isn't built *for* Claude
+Code — it's a real terminal, so it runs whatever you'd run by hand: Claude
+Code, OpenCode, Codex, Cline, aider, Hermes, Antigravity, gemini-cli,
+goose, or anything else that lives in a shell. termora has no idea which
+one you're running; it just streams the PTY.
 
-- Watch Claude Code work in real time from your phone
-- Full color ANSI rendering — diffs, spinners, progress bars all work
-- Custom keyboard with `Ctrl`, `Tab`, `Esc`, arrow keys, and Claude-specific shortcuts (commit, diff, plan, Ctrl+C) built in
+- Watch any CLI agent work in real time from your phone, full color ANSI
+  rendering — diffs, spinners, progress bars all work
+- Custom keyboard with `Ctrl`, `Tab`, `Esc`, arrow keys, and configurable
+  shortcuts (commit, diff, plan, Ctrl+C) built in
 - Sticky modifiers — tap Shift/Ctrl/Opt once, it stays for the next key
-- Touch Actions Bar — select, copy, paste, cut without fighting the mobile keyboard
+- Touch Actions Bar — select, copy, paste, cut without fighting the mobile
+  keyboard
 - Session grid — see all your terminals at a glance; switch instantly
+
+### Fan Out to Parallel Agents
+
+<div align="center">
+<img src="docs/images/phone-fanout.png" width="320" alt="Fan out modal — one prompt, three isolated git worktrees, any command template" />
+<br /><sub>Real capture — command template filled in, ready to fan out across 3 worktrees</sub>
+</div>
+
+One prompt, run across several agents at once — each in its own **git
+worktree**, on its own branch, so they can't step on each other's files or
+git state. Compare the results side by side in the normal Terminals list
+(no separate view needed) and keep the winner.
+
+termora has no built-in notion of any agent's CLI flags — different tools
+take a prompt differently (`claude -p`, `opencode run`, `aider --message`,
+some just take it as a bare trailing argument) — so the command field is a
+literal template with a `{prompt}` placeholder, run exactly as typed:
+
+```
+claude -p {prompt}
+opencode run {prompt}
+codex exec {prompt}
+aider --message {prompt}
+```
+
+No placeholder at all also works — the prompt is appended as a final
+argument.
 
 ---
 
@@ -201,6 +235,7 @@ termora was built with Claude Code in mind:
 - **Multiple live sessions** — up to 8 concurrent PTYs, create/rename/close
 - **Real PTY** — full zsh/bash with colors, vim, htop, tmux, everything works
 - **Session persistence** — sessions survive server restarts via tmux (auto-detected, no config)
+- **Fan out to parallel agents** — one prompt, N agents, each in its own isolated git worktree — [see above](#fan-out-to-parallel-agents)
 - **Session grid** — 2-column card layout with live terminal previews
 
 ### Touch & Mobile
