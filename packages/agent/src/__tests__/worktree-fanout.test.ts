@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
@@ -41,6 +41,10 @@ function makeConfig(dbPath: string): AgentConfig {
   };
 }
 
+// Real PTY spawns + real git worktree commands are comfortably fast
+// locally but can be noticeably slower on a loaded, shared CI runner.
+vi.setConfig({ testTimeout: 15_000, hookTimeout: 20_000 });
+
 describe('worktree fan-out over a real WebSocket', () => {
   const dbPath = join(tmpdir(), `termora-fanout-${randomBytes(6).toString('hex')}.db`);
   const config = makeConfig(dbPath);
@@ -73,7 +77,7 @@ describe('worktree fan-out over a real WebSocket', () => {
     // the fan-out source session's cwd is inside a real git repo.
     originalHome = process.env.HOME;
     process.env.HOME = repoRoot;
-  });
+  }, 20_000);
 
   afterAll(async () => {
     if (originalHome !== undefined) process.env.HOME = originalHome;
@@ -95,7 +99,7 @@ describe('worktree fan-out over a real WebSocket', () => {
     return ws;
   }
 
-  function waitFor(ws: WebSocket, predicate: (msg: ServerMessage) => boolean, timeoutMs = 5000): Promise<ServerMessage> {
+  function waitFor(ws: WebSocket, predicate: (msg: ServerMessage) => boolean, timeoutMs = 8000): Promise<ServerMessage> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('timeout waiting for message')), timeoutMs);
       const onMessage = (raw: Buffer) => {

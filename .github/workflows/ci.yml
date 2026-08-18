@@ -22,6 +22,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # zsh: the only interactive shell type PTY sessions can spawn (see
+      # SHELL_MAP in packages/agent/src/pty-manager.ts) — not preinstalled on
+      # ubuntu-latest. lsof: used by process-cwd.ts to resolve a session's
+      # real cwd independent of shell-integration hooks.
+      - name: Install shell dependencies
+        run: sudo apt-get update && sudo apt-get install -y zsh lsof
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v7
         with:
