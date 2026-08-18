@@ -11,7 +11,9 @@ import {
   verifyBootstrapToken,
   verifyStaticToken,
   createSessionJWT,
+  verifyJWT,
 } from './auth.js';
+import { deriveDeviceName } from './device-name.js';
 import { createSSERouter } from './sse-handler.js';
 import { getTunnelInfo } from './tunnel.js';
 import type { DbStatements } from './db.js';
@@ -179,10 +181,13 @@ function mountAuthRoutes(
         return;
       }
 
-      const jwt = await createSessionJWT(
+      const { token: jwt, jti } = await createSessionJWT(
         { authMethod: 'bootstrap' },
         config.jwtSecret,
       );
+
+      const deviceName = deriveDeviceName(req.headers['user-agent']);
+      statements.insertSession.run(jti, jti, deviceName);
 
       res.json({ token: jwt });
     } catch (err) {
@@ -191,6 +196,84 @@ function mountAuthRoutes(
     }
   });
 
+  mountDeviceRoutes(app, config, statements);
+}
+
+/**
+ * Resolves the caller's session from an `Authorization: Bearer <jwt>`
+ * header, checking both the signature and that the session hasn't been
+ * revoked (deleted from Settings > Devices). Used only by the device
+ * management routes below — the terminal WebSocket has its own equivalent
+ * check in ws-handler.ts.
+ */
+async function requireAuth(
+  req: express.Request,
+  res: express.Response,
+  config: AgentConfig,
+  statements: DbStatements,
+): Promise<{ jti: string } | null> {
+  const header = req.header('authorization');
+  const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : undefined;
+  if (!token) {
+    res.status(401).json({ error: 'Missing bearer token' });
+    return null;
+  }
+  try {
+    const { payload } = await verifyJWT(token, config.jwtSecret);
+    if (!payload.jti || !statements.getSession.get(payload.jti)) {
+      res.status(401).json({ error: 'Session revoked' });
+      return null;
+    }
+    return { jti: payload.jti };
+  } catch {
+    res.status(401).json({ error: 'Invalid or expired token' });
+    return null;
+  }
+}
+
+/**
+ * Device management — lets a user see every device with active access
+ * and revoke one individually, without disturbing the others. Before this,
+ * revoking access meant rotating the shared secret and logging every
+ * device out at once.
+ */
+function mountDeviceRoutes(
+  app: Express,
+  config: AgentConfig,
+  statements: DbStatements,
+): void {
+  app.get('/api/devices', async (req, res) => {
+    const auth = await requireAuth(req, res, config, statements);
+    if (!auth) return;
+
+    const devices = statements.listSessions.all().map((row) => ({
+      id: row.id,
+      deviceName: row.device_name,
+      createdAt: row.created_at,
+      lastSeen: row.last_seen,
+      current: row.id === auth.jti,
+    }));
+    res.json({ devices });
+  });
+
+  app.delete('/api/devices/:id', async (req, res) => {
+    const auth = await requireAuth(req, res, config, statements);
+    if (!auth) return;
+
+    statements.deleteSession.run(req.params.id);
+    res.status(204).end();
+  });
+
+  // Revokes every device at once, including the caller's own — the
+  // equivalent of rotating the shared secret, but explicit and intentional
+  // rather than a side effect of some other action.
+  app.delete('/api/devices', async (req, res) => {
+    const auth = await requireAuth(req, res, config, statements);
+    if (!auth) return;
+
+    statements.deleteAllSessions.run();
+    res.status(204).end();
+  });
 }
 
 /**

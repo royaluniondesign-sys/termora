@@ -86,7 +86,7 @@ async function main(): Promise<void> {
     }
   }
 
-  setupWebSocketHandler(wss, ptyManager, config.jwtSecret);
+  setupWebSocketHandler(wss, ptyManager, config.jwtSecret, statements);
 
   // 8. Start HTTP server (auto-finds open port if configured port is busy)
   const actualPort = await startServer(httpServer, config.port);

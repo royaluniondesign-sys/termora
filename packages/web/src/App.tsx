@@ -594,6 +594,7 @@ export function App() {
               onKeyboardModeChange={setKeyboardMode}
               connectionStatus={connectionStatus}
               latencyMs={latencyMs}
+              authToken={auth.token}
             />
           )}
           {view === 'reconnect' && (

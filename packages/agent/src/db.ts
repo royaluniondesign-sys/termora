@@ -2,6 +2,14 @@ import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+export interface SessionRow {
+  id: string;
+  jwt_id: string;
+  device_name: string;
+  created_at: string;
+  last_seen: string;
+}
+
 export interface PtySessionRow {
   id: string;
   tmux_name: string;
@@ -17,7 +25,10 @@ export interface DbStatements {
   deleteBootstrapToken: Database.Statement<[string]>;
   insertSession: Database.Statement<[string, string, string]>;
   updateSessionLastSeen: Database.Statement<[string]>;
-  getSession: Database.Statement<[string], { id: string; jwt_id: string; email: string; created_at: string; last_seen: string }>;
+  getSession: Database.Statement<[string], SessionRow>;
+  listSessions: Database.Statement<[], SessionRow>;
+  deleteSession: Database.Statement<[string]>;
+  deleteAllSessions: Database.Statement<[]>;
   insertPtySession: Database.Statement<[string, string, string, string, string]>;
   getPtySession: Database.Statement<[string], PtySessionRow>;
   listPtySessions: Database.Statement<[], PtySessionRow>;
@@ -57,7 +68,7 @@ export function initDatabase(dbPath: string): DbContext {
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       jwt_id TEXT NOT NULL,
-      email TEXT NOT NULL DEFAULT '',
+      device_name TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       last_seen TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -77,6 +88,15 @@ export function initDatabase(dbPath: string): DbContext {
     CREATE INDEX IF NOT EXISTS idx_pty_sessions_tmux_name ON pty_sessions(tmux_name);
   `);
 
+  // Migration: older databases created the sessions table with a column
+  // named "email" (it was always just a free-text device label, never
+  // actually an email address). Rename it in place so existing installs
+  // keep their session history instead of losing it silently.
+  const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all() as { name: string }[];
+  if (sessionColumns.some((col) => col.name === 'email')) {
+    db.exec('ALTER TABLE sessions RENAME COLUMN email TO device_name');
+  }
+
   // Prepare statements for repeated use
   const statements: DbStatements = {
     insertBootstrapToken: db.prepare(
@@ -89,13 +109,22 @@ export function initDatabase(dbPath: string): DbContext {
       'DELETE FROM bootstrap_tokens WHERE hash = ?',
     ),
     insertSession: db.prepare(
-      'INSERT INTO sessions (id, jwt_id, email) VALUES (?, ?, ?)',
+      'INSERT INTO sessions (id, jwt_id, device_name) VALUES (?, ?, ?)',
     ),
     updateSessionLastSeen: db.prepare(
       "UPDATE sessions SET last_seen = datetime('now') WHERE id = ?",
     ),
     getSession: db.prepare(
-      'SELECT id, jwt_id, email, created_at, last_seen FROM sessions WHERE id = ?',
+      'SELECT id, jwt_id, device_name, created_at, last_seen FROM sessions WHERE id = ?',
+    ),
+    listSessions: db.prepare(
+      'SELECT id, jwt_id, device_name, created_at, last_seen FROM sessions ORDER BY last_seen DESC',
+    ),
+    deleteSession: db.prepare(
+      'DELETE FROM sessions WHERE id = ?',
+    ),
+    deleteAllSessions: db.prepare(
+      'DELETE FROM sessions',
     ),
     insertPtySession: db.prepare(
       'INSERT INTO pty_sessions (id, tmux_name, shell, name, cwd) VALUES (?, ?, ?, ?, ?)',

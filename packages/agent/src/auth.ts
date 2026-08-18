@@ -57,18 +57,26 @@ export interface SessionJWTClaims {
   authMethod: 'bootstrap';
 }
 
+export interface SessionJWT {
+  token: string;
+  jti: string;
+}
+
 /**
  * Creates a signed JWT for an authenticated session.
  * Uses HS256 with a 7-day expiry and a random JTI for uniqueness.
+ * Returns the jti alongside the token so the caller can record it as a
+ * revocable device session — the JWT signature alone proves the token was
+ * issued by us, not that it hasn't since been revoked.
  */
 export async function createSessionJWT(
   claims: SessionJWTClaims,
   secret: string,
-): Promise<string> {
+): Promise<SessionJWT> {
   const secretKey = new TextEncoder().encode(secret);
   const jti = randomUUID();
 
-  return new SignJWT({ ...claims })
+  const token = await new SignJWT({ ...claims })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -76,6 +84,8 @@ export async function createSessionJWT(
     .setIssuer('termora-agent')
     .setSubject(claims.email ?? 'local')
     .sign(secretKey);
+
+  return { token, jti };
 }
 
 export interface VerifiedJWT {

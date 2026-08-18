@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { IncomingMessage } from 'node:http';
 import { URL } from 'node:url';
 import { verifyJWT } from './auth.js';
+import type { DbStatements } from './db.js';
 import { PTYManager, type PTYSession } from './pty-manager.js';
 import type { ClientMessage, ServerMessage, ShellType } from './types.js';
 
@@ -58,11 +59,12 @@ export function setupWebSocketHandler(
   wss: WebSocketServer,
   ptyManager: PTYManager,
   jwtSecret: string,
+  statements: DbStatements,
 ): void {
   const subscriptions: SubscriptionMap = new Map();
 
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-    void handleConnection(ws, req, ptyManager, jwtSecret, subscriptions);
+    void handleConnection(ws, req, ptyManager, jwtSecret, statements, subscriptions);
   });
 }
 
@@ -71,6 +73,7 @@ async function handleConnection(
   req: IncomingMessage,
   ptyManager: PTYManager,
   jwtSecret: string,
+  statements: DbStatements,
   subscriptions: SubscriptionMap,
 ): Promise<void> {
   // Extract JWT from query parameter
@@ -82,16 +85,30 @@ async function handleConnection(
     return;
   }
 
+  let jti: string | undefined;
   try {
-    await verifyJWT(token, jwtSecret);
+    const { payload } = await verifyJWT(token, jwtSecret);
+    jti = payload.jti;
   } catch {
     ws.close(WS_CLOSE_UNAUTHORIZED, 'Invalid or expired token');
     return;
   }
 
+  // The JWT signature alone only proves we issued it, not that the device
+  // session hasn't since been revoked from Settings > Devices — that state
+  // lives in the sessions table, not in the (unrevocable) token itself.
+  if (jti && !statements.getSession.get(jti)) {
+    ws.close(WS_CLOSE_UNAUTHORIZED, 'Session revoked');
+    return;
+  }
+  if (jti) statements.updateSessionLastSeen.run(jti);
+
   // Authentication succeeded -- set up message handling
   (ws as unknown as { isAlive: boolean }).isAlive = true;
-  ws.on('pong', () => { (ws as unknown as { isAlive: boolean }).isAlive = true; });
+  ws.on('pong', () => {
+    (ws as unknown as { isAlive: boolean }).isAlive = true;
+    if (jti) statements.updateSessionLastSeen.run(jti);
+  });
   subscriptions.set(ws, new Set());
 
   ws.on('message', (rawData: Buffer | string) => {

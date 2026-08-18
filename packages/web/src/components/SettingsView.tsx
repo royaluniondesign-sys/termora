@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useConnectionInfo } from '../hooks/useConnectionInfo';
+import { useDevices } from '../hooks/useDevices';
+import { formatRelativeTime } from '../lib/format-relative-time';
 import type { SkinId, KeyboardMode, PerKeyColors } from '../lib/types';
 import type { ConnectionStatus } from '../lib/ws-client';
 
@@ -28,6 +30,7 @@ interface SettingsViewProps {
   onKeyboardModeChange: (mode: KeyboardMode) => void;
   connectionStatus: ConnectionStatus;
   latencyMs: number | null;
+  authToken: string | null;
 }
 
 // ── Section label ────────────────────────────────────────────────────────────
@@ -387,12 +390,14 @@ export function SettingsView({
   onKeyboardModeChange,
   connectionStatus,
   latencyMs,
+  authToken,
 }: SettingsViewProps) {
   const [section, setSection] = useState<SettingsSection>('connection');
   const [haptic, setHaptic] = useState(70);
   const [repeatDelay, setRepeatDelay] = useState(350);
   const [notifications, setNotifications] = useState(false);
   const [sound, setSound] = useState(false);
+  const devicesState = useDevices(authToken);
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -572,19 +577,50 @@ export function SettingsView({
               </SettingRow>
             </Card>
 
+            <SectionLabel label="Devices" />
+            <Card>
+              {devicesState.devices.length === 0 && !devicesState.loading && (
+                <div style={{ padding: '14px 12px', fontSize: 11, color: S.text3, textAlign: 'center' }}>
+                  No devices signed in
+                </div>
+              )}
+              {devicesState.devices.map((device, i) => (
+                <SettingRow
+                  key={device.id}
+                  label={device.deviceName || 'Unknown device'}
+                  desc={`${device.current ? 'This device · ' : ''}Last seen ${formatRelativeTime(device.lastSeen)}`}
+                  last={i === devicesState.devices.length - 1}
+                >
+                  <button
+                    type="button"
+                    onClick={() => void devicesState.revoke(device.id)}
+                    style={{
+                      height: 26, padding: '0 10px', borderRadius: 6,
+                      border: `1px solid ${S.error}44`, background: `${S.error}10`,
+                      color: S.error, fontSize: 10, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    {device.current ? 'Sign out' : 'Revoke'}
+                  </button>
+                </SettingRow>
+              ))}
+            </Card>
+
             <SectionLabel label="Info" />
             <Card>
               <div style={{ padding: '10px 12px', fontSize: 10, color: S.text3, lineHeight: 1.7 }}>
-                Token is stored at{' '}
-                <code style={{ color: S.text2, fontFamily: "'Geist Mono', monospace" }}>~/.termora/static_token</code>.{' '}
+                Scanning the QR (or opening the one-click URL) mints a separate,
+                individually revocable session per device — revoking one above
+                does not sign out the others.
                 The agent uses JWT rotation with 7-day expiry for session-based auth.
-                Static tokens never expire until regenerated.
               </div>
             </Card>
 
             <div style={{ marginTop: 16 }}>
               <button
                 type="button"
+                onClick={() => void devicesState.revokeAll()}
                 style={{
                   width: '100%', height: 38, borderRadius: 8,
                   border: `1px solid ${S.error}44`, background: `${S.error}10`,
@@ -592,7 +628,7 @@ export function SettingsView({
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >
-                Invalidate All Tokens
+                Sign Out All Devices
               </button>
             </div>
           </>
