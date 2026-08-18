@@ -1,6 +1,6 @@
 import express, { type Express } from 'express';
 import rateLimit from 'express-rate-limit';
-import { createServer as createNetServer } from 'node:net';
+import { createServer as createNetServer, createConnection } from 'node:net';
 import { createServer, type Server as HttpServer } from 'node:http';
 import { WebSocketServer } from 'ws';
 import { join } from 'node:path';
@@ -33,8 +33,11 @@ export function createAppServer(
 ): ServerContext {
   const app = express();
 
-  // Trust proxy headers from tunnels (ngrok, SSH)
-  app.set('trust proxy', true);
+  // Trust proxy headers only from the local tunnel process (cloudflared, ngrok,
+  // SSH) — it connects over loopback and appends the real client IP to
+  // X-Forwarded-For. Trusting the whole chain would let a remote client send an
+  // arbitrary X-Forwarded-For and rotate it to bypass the auth rate limit.
+  app.set('trust proxy', 'loopback');
 
   // Middleware — CORS for development
   app.use((_req, res, next) => {
@@ -166,6 +169,40 @@ function mountAuthRoutes(
     }
   });
 
+}
+
+/**
+ * Picks the port the tunnel should forward to.
+ *
+ * WEB_PORT exists for dev, where the tunnel must hit the Vite dev server rather
+ * than the agent. In production nothing listens there, so a WEB_PORT left over
+ * in .env would publish a tunnel to a dead port. Fall back to the agent port
+ * unless something is genuinely serving the web port.
+ */
+export async function resolveTunnelPort(
+  webPort: number,
+  agentPort: number,
+): Promise<number> {
+  if (webPort === agentPort) return agentPort;
+  return (await isPortServing(webPort)) ? webPort : agentPort;
+}
+
+/**
+ * Checks whether something actually accepts connections on a local port.
+ * Unlike a bind probe, this sees servers bound only to loopback.
+ */
+function isPortServing(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = createConnection({ port, host: '127.0.0.1' });
+    const done = (serving: boolean) => {
+      socket.destroy();
+      resolve(serving);
+    };
+    socket.setTimeout(500);
+    socket.once('connect', () => done(true));
+    socket.once('timeout', () => done(false));
+    socket.once('error', () => done(false));
+  });
 }
 
 /**
