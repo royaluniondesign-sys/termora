@@ -4,32 +4,32 @@
 
 <br /><br />
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![CI](https://github.com/royaluniondesign-sys/termora/actions/workflows/ci.yml/badge.svg)](https://github.com/royaluniondesign-sys/termora/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green?logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-14%20passing-brightgreen)]()
-[![Security](https://img.shields.io/badge/Security-Hardened-blue)]()
+[![Tests](https://img.shields.io/badge/Tests-31%20passing-brightgreen)]()
+[![Security](https://img.shields.io/badge/Security-Hardened-blue)](#security)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **Real terminal access from your phone. Not SSH. Not a simulation. A real PTY on your machine, streamed to your pocket.**
 
-[Quickstart](#quickstart) · [How it works](#how-it-works) · [Security](#security) · [Multi-machine](#multi-machine) · [Contributing](CONTRIBUTING.md)
+[Quickstart](#quickstart) · [How it works](#how-it-works) · [vs. Termux](#termora-vs-termux) · [Security](#security) · [Multi-machine](#multi-machine) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
 ---
 
 <div align="center">
+<img src="docs/images/termora-tour.gif" width="260" alt="Live tour: dashboard, a real terminal session, tunnel status, and settings" />
+<br /><sub>Real capture — dashboard, an active session, tunnel status, and settings</sub>
+<br /><br />
 <table>
 <tr>
-<td align="center"><img src="docs/images/phone-terminal.png" width="200" /><br /><sub><b>Terminal & Quick Launch</b></sub></td>
-<td align="center"><img src="docs/images/phone-commands.png" width="200" /><br /><sub><b>Tap-to-Run Commands</b></sub></td>
-<td align="center"><img src="docs/images/phone-grid.png" width="200" /><br /><sub><b>Session Grid</b></sub></td>
-</tr>
-<tr>
-<td align="center"><img src="docs/images/phone-status.png" width="200" /><br /><sub><b>Connection Status</b></sub></td>
-<td align="center"><img src="docs/images/phone-settings.png" width="200" /><br /><sub><b>Connection Panel</b></sub></td>
-<td></td>
+<td align="center"><img src="docs/images/phone-terminal.png" width="190" /><br /><sub><b>Real PTY session</b></sub></td>
+<td align="center"><img src="docs/images/phone-sessions.png" width="190" /><br /><sub><b>Session dashboard</b></sub></td>
+<td align="center"><img src="docs/images/phone-tunnels.png" width="190" /><br /><sub><b>Tunnel status</b></sub></td>
+<td align="center"><img src="docs/images/phone-settings.png" width="190" /><br /><sub><b>Connection panel</b></sub></td>
 </tr>
 </table>
 </div>
@@ -38,7 +38,33 @@
 
 ## Quickstart
 
-> Requires [Node.js 20+](https://nodejs.org) and macOS or Linux.
+New to running things from a terminal? This section assumes nothing —
+follow it top to bottom and you'll have termora on your phone in about
+two minutes.
+
+### 1. Install the one thing you need
+
+termora needs [Node.js](https://nodejs.org) version 20 or newer, on a Mac or
+Linux machine (the machine you want to control from your phone — not the
+phone itself).
+
+Check if you already have it:
+
+```bash
+node --version
+```
+
+If that prints `v20.x.x` or higher, skip to step 2. Otherwise, install
+Node.js from [nodejs.org](https://nodejs.org) (the "LTS" button is the one
+you want), or with a package manager:
+
+```bash
+brew install node          # macOS, via Homebrew
+```
+
+### 2. Get termora and start it
+
+Open a terminal on your Mac/Linux machine and run:
 
 ```bash
 git clone https://github.com/royaluniondesign-sys/termora.git
@@ -47,19 +73,32 @@ npm install
 npm run dev
 ```
 
-A QR code appears in the console. Scan it with your phone. You're in — full terminal, real PTY, no signup required.
+`npm install` downloads termora's dependencies — it can take a minute the
+first time. `npm run dev` then starts the agent.
 
-**Already installed?**
+### 3. Scan the QR code
+
+A QR code appears right there in your terminal. Open your phone's camera
+app, point it at the QR code, and tap the notification that pops up.
+
+That's it — you're looking at a real terminal on your computer, from your
+phone. No account, no signup, no app to install on the phone (it's a normal
+web page).
+
+> **Didn't get a QR code, or it won't scan?** Copy the URL printed below it
+> instead and open it directly in your phone's browser.
+
+### Next time
+
+Once it's cloned, starting it again is just:
 
 ```bash
 cd termora && npm run dev
 ```
 
-**Stop it:**
-
-```bash
-# Press Ctrl+C in the terminal where npm run dev is running
-```
+**To stop it:** press `Ctrl+C` in the terminal where `npm run dev` is
+running. Your shell sessions keep their scrollback (via tmux) and pick up
+right where you left off next time you start it.
 
 ---
 
@@ -179,6 +218,43 @@ termora was built with Claude Code in mind:
 - **Auto-recovery** — tunnel recreates after sleep/wake
 - **One-click auth URL** — token embedded in URL, share with any device
 - **Connection panel** — shows live tunnel mode, copyable auth URL, ngrok setup, stop instructions
+
+---
+
+## termora vs. Termux
+
+They get compared because both put a terminal on your phone. They solve
+different problems.
+
+**[Termux](https://termux.dev)** is a Linux environment that runs *inside*
+Android. It gives you a real shell, a package manager, and Python/Node/etc —
+but it's a sandbox on the phone itself. Your actual project, your actual
+running dev server, your actual `git` history — none of that is there. You'd
+be starting a second, separate environment from scratch, and it's
+Android-only: no iPhone, no iPad, no tablet from another vendor.
+
+**termora** doesn't put a Linux environment on your phone. It puts your
+phone in front of the Linux environment you already have — your Mac, your
+Ubuntu box, your build server, wherever your code and your tools actually
+live. The phone is just the screen and keyboard; the terminal, the shell
+history, the tmux sessions, `claude`/`opencode`/whatever you run — all of it
+is the real thing, running on the real machine, exactly as if you'd walked
+up to it.
+
+| | Termux | termora |
+|---|---|---|
+| **What it is** | A Linux distro running inside Android | A window onto a terminal on your actual computer |
+| **Where your code lives** | Wherever you clone it *inside Termux* — separate from your desktop | Wherever it already is, on the machine you're actually developing on |
+| **Platform** | Android only | Any device with a browser — iPhone, iPad, Android, another laptop |
+| **Setup per project** | Reinstall your toolchain (Node, Python, git config...) inside Termux | None — it's the same machine, same environment, already set up |
+| **Access from outside your Wi-Fi** | Needs your own SSH/VPN setup | Built in — cloudflared/ngrok/SSH tunnel, auto-selected, no config |
+| **UI** | Text-only terminal emulator | Touch-tuned terminal + dashboard, tap-to-run commands, session grid |
+| **Session persistence** | Survives app restarts (it's a local process) | Survives agent *and device* restarts, via tmux control mode |
+| **Keyboard** | Phone keyboard + Termux's key row | Configurable virtual keyboard with modifier stickiness, skins, per-key colors |
+
+If what you want is a Linux box that happens to run on your Android phone,
+Termux is the right tool. If what you want is your laptop or server's actual
+terminal, in your pocket, termora is what that is for.
 
 ---
 
