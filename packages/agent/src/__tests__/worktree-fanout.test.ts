@@ -13,6 +13,7 @@ import { PTYManager } from '../pty-manager.js';
 import { initDatabase } from '../db.js';
 import { createSessionJWT } from '../auth.js';
 import { listFanoutWorktrees, removeWorktree } from '../worktree.js';
+import { getProcessCwd } from '../process-cwd.js';
 import type { AgentConfig } from '../config.js';
 import type { ServerMessage } from '../types.js';
 
@@ -43,7 +44,7 @@ function makeConfig(dbPath: string): AgentConfig {
 
 // Real PTY spawns + real git worktree commands are comfortably fast
 // locally but can be noticeably slower on a loaded, shared CI runner.
-vi.setConfig({ testTimeout: 15_000, hookTimeout: 20_000 });
+vi.setConfig({ testTimeout: 20_000, hookTimeout: 20_000 });
 
 describe('worktree fan-out over a real WebSocket', () => {
   const dbPath = join(tmpdir(), `termora-fanout-${randomBytes(6).toString('hex')}.db`);
@@ -166,12 +167,23 @@ describe('worktree fan-out over a real WebSocket', () => {
       expect((created as { cwd: string }).cwd).toBe(outsideDir);
 
       // cd into the real repo — a plain shell command, exactly like a user
-      // typing it. session.cwd will NOT reflect this (no OSC 7 hook). Give
-      // the shell generous time to actually process it on a slow CI runner
-      // before asserting on the (intentionally stale) tracked value.
+      // typing it. session.cwd will NOT reflect this (no OSC 7 hook). Rather
+      // than guess how long a freshly-installed shell takes to reach an
+      // interactive prompt (compinit etc. can genuinely take a few seconds
+      // on a cold, just-apt-installed zsh), poll the real OS-level cwd
+      // until it actually changes, up to a generous bound.
+      const pid = ptyManager.get(sourceId)?.pty.pid;
+      if (!pid) throw new Error('source session has no pid');
       ptyManager.write(sourceId, `cd ${repoRoot}\n`);
-      await new Promise((r) => setTimeout(r, 2000));
-      expect(ptyManager.get(sourceId)?.cwd).toBe(outsideDir); // confirms the staleness this test guards against
+      const deadline = Date.now() + 12_000;
+      let realCwd: string | null = null;
+      while (Date.now() < deadline) {
+        realCwd = await getProcessCwd(pid);
+        if (realCwd === repoRoot) break;
+        await new Promise((r) => setTimeout(r, 300));
+      }
+      expect(realCwd).toBe(repoRoot); // the shell really did move...
+      expect(ptyManager.get(sourceId)?.cwd).toBe(outsideDir); // ...but the tracked field stayed stale, as expected
 
       ws.send(JSON.stringify({
         type: 'worktree_fanout',
