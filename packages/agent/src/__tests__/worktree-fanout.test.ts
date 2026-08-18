@@ -13,7 +13,6 @@ import { PTYManager } from '../pty-manager.js';
 import { initDatabase } from '../db.js';
 import { createSessionJWT } from '../auth.js';
 import { listFanoutWorktrees, removeWorktree } from '../worktree.js';
-import { getProcessCwd } from '../process-cwd.js';
 import type { AgentConfig } from '../config.js';
 import type { ServerMessage } from '../types.js';
 
@@ -148,47 +147,41 @@ describe('worktree fan-out over a real WebSocket', () => {
     }
   });
 
-  it('resolves the real cwd even when the shell never emits OSC 7 (no session.cwd update)', async () => {
-    // Regression test for a bug caught live: a plain zsh with no shell
-    // integration never emits the OSC 7 sequence session.cwd relies on, so
-    // `cd`-ing a session leaves session.cwd stale at its spawn directory
-    // even though the actual shell process really did move. Fan-out must
-    // ask the OS directly instead of trusting that stale field.
-    const outsideDir = await mkdtemp(join(tmpdir(), 'termora-not-a-repo-'));
-    const originalHomeLocal = process.env.HOME;
-    process.env.HOME = outsideDir;
+  it('ignores a stale session.cwd and uses the real process cwd instead', async () => {
+    // Regression test for a bug caught live: session.cwd is tracked from
+    // OSC 7 escape sequences, which a plain shell with no shell-integration
+    // hook configured never emits — cd-ing a session leaves session.cwd
+    // stuck at its spawn directory even though the real shell process moved.
+    // Reproducing that staleness by actually cd-ing a live shell and waiting
+    // for it turned out to be exactly the kind of timing-dependent thing
+    // this fix exists to avoid trusting: a freshly-installed zsh's first
+    // interactive startup was slow and inconsistent enough on a shared CI
+    // runner to make that version of this test flaky. What actually needs
+    // proving is narrower and fully deterministic: given a session whose
+    // tracked cwd is wrong, fan-out must resolve the repo from the real
+    // process cwd, not the stale field — so drive that directly.
     let sourceId = '';
     let ws: WebSocket | undefined;
     try {
+      // Spawn at the real repo (same reliable path as the first test), then
+      // deliberately corrupt the tracked field to something else entirely —
+      // simulating exactly what a stale/never-updated OSC 7 value looks like.
+      const originalHomeLocal = process.env.HOME;
+      process.env.HOME = repoRoot;
       ws = await connectAuthenticated();
       ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
       const created = await waitFor(ws, (m) => m.type === 'session');
       sourceId = (created as { sessionId: string }).sessionId;
-      expect((created as { cwd: string }).cwd).toBe(outsideDir);
+      process.env.HOME = originalHomeLocal;
 
-      // cd into the real repo — a plain shell command, exactly like a user
-      // typing it. session.cwd will NOT reflect this (no OSC 7 hook). Rather
-      // than guess how long a freshly-installed shell takes to reach an
-      // interactive prompt (compinit etc. can genuinely take a few seconds
-      // on a cold, just-apt-installed zsh), poll the real OS-level cwd
-      // until it actually changes, up to a generous bound.
-      const pid = ptyManager.get(sourceId)?.pty.pid;
-      if (!pid) throw new Error('source session has no pid');
-      ptyManager.write(sourceId, `cd ${repoRoot}\n`);
-      const deadline = Date.now() + 12_000;
-      let realCwd: string | null = null;
-      while (Date.now() < deadline) {
-        realCwd = await getProcessCwd(pid);
-        if (realCwd === repoRoot) break;
-        await new Promise((r) => setTimeout(r, 300));
-      }
-      expect(realCwd).toBe(repoRoot); // the shell really did move...
-      expect(ptyManager.get(sourceId)?.cwd).toBe(outsideDir); // ...but the tracked field stayed stale, as expected
+      const session = ptyManager.get(sourceId);
+      if (!session) throw new Error('source session not found');
+      session.cwd = '/definitely/not/a/git/repo';
 
       ws.send(JSON.stringify({
         type: 'worktree_fanout',
         sessionId: sourceId,
-        prompt: 'osc7 regression check',
+        prompt: 'osc7 staleness check',
         agentCommand: 'echo',
         count: 1,
       }));
@@ -199,9 +192,7 @@ describe('worktree fan-out over a real WebSocket', () => {
       for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
     } finally {
       ws?.close();
-      process.env.HOME = originalHomeLocal;
       if (sourceId) ptyManager.destroy(sourceId);
-      await rm(outsideDir, { recursive: true, force: true });
     }
   });
 
