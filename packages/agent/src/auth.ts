@@ -59,7 +59,7 @@ export interface SessionJWTClaims {
 
 /**
  * Creates a signed JWT for an authenticated session.
- * Uses HS256 with an 8-hour expiry and a random JTI for uniqueness.
+ * Uses HS256 with a 7-day expiry and a random JTI for uniqueness.
  */
 export async function createSessionJWT(
   claims: SessionJWTClaims,

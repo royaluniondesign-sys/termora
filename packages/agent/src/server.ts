@@ -39,11 +39,17 @@ export function createAppServer(
   // arbitrary X-Forwarded-For and rotate it to bypass the auth rate limit.
   app.set('trust proxy', 'loopback');
 
-  // Middleware — CORS for development
+  // Baseline hardening headers on every response. The SPA is always served
+  // same-origin — by the agent itself in production, by Vite's server-side
+  // proxy (not CORS) in dev — so there is no legitimate cross-origin caller.
+  // No Access-Control-Allow-Origin header is set anywhere: that is a browser
+  // default-deny, which is what we want. A blanket wildcard here used to let
+  // any third-party page that knew the tunnel URL read every response —
+  // including /api/info, which embeds the persistent auth token.
   app.use((_req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('X-Content-Type-Options', 'nosniff');
+    res.header('X-Frame-Options', 'DENY');
+    res.header('Referrer-Policy', 'no-referrer');
     if (_req.method === 'OPTIONS') {
       res.sendStatus(204);
       return;
