@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { loadConfig } from './config.js';
 import { initDatabase } from './db.js';
 import { generateBootstrapToken, hashToken } from './auth.js';
-import { createAppServer, startServer } from './server.js';
+import { createAppServer, startServer, resolveTunnelPort } from './server.js';
 import { setupWebSocketHandler } from './ws-handler.js';
 import { PTYManager } from './pty-manager.js';
 import { createTunnel, printAccessInfo, startTunnelMonitor, registerShutdownHandlers } from './tunnel.js';
@@ -95,8 +95,9 @@ async function main(): Promise<void> {
   }
 
   // 9. Create tunnel — tries ngrok → SSH (localhost.run) → local network IP
-  // If WEB_PORT was explicitly set (dev mode), tunnel to that; otherwise tunnel to the actual agent port
-  const tunnelPort = config.webPort !== config.port ? config.webPort : actualPort;
+  // In dev the tunnel targets WEB_PORT (Vite); in production it targets the
+  // agent itself. resolveTunnelPort falls back when nothing serves WEB_PORT.
+  const tunnelPort = await resolveTunnelPort(config.webPort, actualPort);
   const tunnel = await createTunnel(tunnelPort, config.ngrokAuthtoken, config.ngrokStaticDomain, config.tunnelMethod);
 
   // 10. Print clean startup info (use static token for persistent one-click access)

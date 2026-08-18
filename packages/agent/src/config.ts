@@ -117,13 +117,27 @@ function getOrCreateJwtSecret(termoraDir: string): string {
   return secret;
 }
 
+export const DEFAULT_PORT = 4030;
+
+/**
+ * Resolves the port the agent listens on.
+ *
+ * TERMORA_PORT is the documented name (README, .env.example); PORT stays
+ * supported for existing setups. Call after loadDotEnv() so .env is visible.
+ */
+export function resolveAgentPort(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env.TERMORA_PORT ?? env.PORT;
+  const parsed = parseInt(raw ?? '', 10);
+  return Number.isNaN(parsed) ? DEFAULT_PORT : parsed;
+}
+
 export function loadConfig(): AgentConfig {
   // Load .env before reading any env vars
   loadDotEnv();
 
   const termoraDir = join(homedir(), '.termora');
   const defaultDbPath = join(termoraDir, 'termora.db');
-  const port = parseInt(getEnv('PORT') ?? '4030', 10);
+  const port = resolveAgentPort();
 
   return {
     port,
