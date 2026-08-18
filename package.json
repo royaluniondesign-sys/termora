@@ -41,9 +41,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
-    "@rollup/rollup-darwin-x64": "^4.62.2",
     "eslint": "^9.0.0",
-    "lightningcss-darwin-x64": "^1.32.0",
     "prettier": "^3.3.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
