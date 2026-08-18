@@ -116,34 +116,35 @@ describe('worktree fan-out over a real WebSocket', () => {
 
   it('creates one worktree + one live session per fan-out slot', async () => {
     const ws = await connectAuthenticated();
+    try {
+      // Create the source session (spawns at HOME, which is repoRoot).
+      ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
+      const created = await waitFor(ws, (m) => m.type === 'session');
+      const sourceId = (created as { sessionId: string }).sessionId;
 
-    // Create the source session (spawns at HOME, which is repoRoot).
-    ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
-    const created = await waitFor(ws, (m) => m.type === 'session');
-    const sourceId = (created as { sessionId: string }).sessionId;
+      ws.send(JSON.stringify({
+        type: 'worktree_fanout',
+        sessionId: sourceId,
+        prompt: 'Fix the login bug',
+        agentCommand: 'echo',
+        count: 2,
+      }));
 
-    ws.send(JSON.stringify({
-      type: 'worktree_fanout',
-      sessionId: sourceId,
-      prompt: 'Fix the login bug',
-      agentCommand: 'echo',
-      count: 2,
-    }));
+      const result = await waitFor(ws, (m) => m.type === 'worktree_fanout_started') as
+        { type: 'worktree_fanout_started'; count: number; branches: string[] };
 
-    const result = await waitFor(ws, (m) => m.type === 'worktree_fanout_started') as
-      { type: 'worktree_fanout_started'; count: number; branches: string[] };
+      expect(result.count).toBe(2);
+      expect(result.branches).toEqual([
+        'fanout/fix-the-login-bug-1',
+        'fanout/fix-the-login-bug-2',
+      ]);
 
-    expect(result.count).toBe(2);
-    expect(result.branches).toEqual([
-      'fanout/fix-the-login-bug-1',
-      'fanout/fix-the-login-bug-2',
-    ]);
-
-    const onDisk = await listFanoutWorktrees(repoRoot);
-    expect(onDisk).toHaveLength(2);
-
-    ws.close();
-    for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
+      const onDisk = await listFanoutWorktrees(repoRoot);
+      expect(onDisk).toHaveLength(2);
+      for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
+    } finally {
+      ws.close();
+    }
   });
 
   it('resolves the real cwd even when the shell never emits OSC 7 (no session.cwd update)', async () => {
@@ -156,17 +157,20 @@ describe('worktree fan-out over a real WebSocket', () => {
     const originalHomeLocal = process.env.HOME;
     process.env.HOME = outsideDir;
     let sourceId = '';
+    let ws: WebSocket | undefined;
     try {
-      const ws = await connectAuthenticated();
+      ws = await connectAuthenticated();
       ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
       const created = await waitFor(ws, (m) => m.type === 'session');
       sourceId = (created as { sessionId: string }).sessionId;
       expect((created as { cwd: string }).cwd).toBe(outsideDir);
 
       // cd into the real repo — a plain shell command, exactly like a user
-      // typing it. session.cwd will NOT reflect this (no OSC 7 hook).
+      // typing it. session.cwd will NOT reflect this (no OSC 7 hook). Give
+      // the shell generous time to actually process it on a slow CI runner
+      // before asserting on the (intentionally stale) tracked value.
       ptyManager.write(sourceId, `cd ${repoRoot}\n`);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 2000));
       expect(ptyManager.get(sourceId)?.cwd).toBe(outsideDir); // confirms the staleness this test guards against
 
       ws.send(JSON.stringify({
@@ -181,8 +185,8 @@ describe('worktree fan-out over a real WebSocket', () => {
 
       const onDisk = await listFanoutWorktrees(repoRoot);
       for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
-      ws.close();
     } finally {
+      ws?.close();
       process.env.HOME = originalHomeLocal;
       if (sourceId) ptyManager.destroy(sourceId);
       await rm(outsideDir, { recursive: true, force: true });
@@ -219,20 +223,23 @@ describe('worktree fan-out over a real WebSocket', () => {
 
   it('rejects an out-of-range count without touching the filesystem', async () => {
     const ws = await connectAuthenticated();
-    ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
-    const created = await waitFor(ws, (m) => m.type === 'session');
-    const sourceId = (created as { sessionId: string }).sessionId;
+    try {
+      ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
+      const created = await waitFor(ws, (m) => m.type === 'session');
+      const sourceId = (created as { sessionId: string }).sessionId;
 
-    ws.send(JSON.stringify({
-      type: 'worktree_fanout',
-      sessionId: sourceId,
-      prompt: 'test',
-      agentCommand: 'echo',
-      count: 99,
-    }));
+      ws.send(JSON.stringify({
+        type: 'worktree_fanout',
+        sessionId: sourceId,
+        prompt: 'test',
+        agentCommand: 'echo',
+        count: 99,
+      }));
 
-    const err = await waitFor(ws, (m) => m.type === 'error') as { type: 'error'; message: string };
-    expect(err.message).toMatch(/count/i);
-    ws.close();
+      const err = await waitFor(ws, (m) => m.type === 'error') as { type: 'error'; message: string };
+      expect(err.message).toMatch(/count/i);
+    } finally {
+      ws.close();
+    }
   });
 });
