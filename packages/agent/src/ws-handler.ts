@@ -444,18 +444,6 @@ function shellQuote(value: string): string {
 }
 
 /**
- * Fans one prompt across `count` new sessions, each in its own git worktree
- * (sibling branches off the fan-out session's current HEAD), each already
- * running `agentCommand -p "<prompt>"`. Every new session is wired to this
- * client exactly like a normal session_create, so they show up in the
- * existing Terminals list immediately — no separate "fan-out view" needed.
- *
- * Runs the agent in print/non-interactive mode deliberately: driving N
- * interactive TUIs through their own first-run prompts unattended is
- * fragile in exactly the way a human at the keyboard is not; -p has no
- * such gate and exits cleanly once done.
- */
-/**
  * Resolves a session's actual current directory by asking the OS/tmux
  * directly, rather than trusting session.cwd (OSC 7 tracking, which stays
  * stale on a shell with no shell-integration hook configured). Falls back
@@ -468,6 +456,46 @@ async function resolveSessionCwd(session: PTYSession): Promise<string> {
   return live ?? session.cwd;
 }
 
+/** Upper bound on the command template — a full invocation with flags, not just a bare name. */
+const MAX_AGENT_COMMAND_LENGTH = 300;
+
+/**
+ * Builds the shell line that starts one fanned-out agent, substituting the
+ * `{prompt}` placeholder in the user's command template with the
+ * shell-quoted prompt. Termora has no idea how any given CLI wants its
+ * prompt passed — `claude -p {prompt}`, `opencode run {prompt}`,
+ * `aider --message {prompt}`, `codex exec {prompt}`, or a tool that just
+ * takes it as a bare trailing argument — so the user's template is taken
+ * literally rather than Termora guessing a flag. If the template doesn't
+ * mention `{prompt}` at all, it's appended as a final argument, matching
+ * the common "just takes the prompt positionally" case.
+ */
+function buildAgentCommandLine(template: string, prompt: string): string {
+  const quotedPrompt = shellQuote(prompt);
+  return template.includes('{prompt}')
+    ? template.replaceAll('{prompt}', quotedPrompt)
+    : `${template} ${quotedPrompt}`;
+}
+
+/**
+ * Fans one prompt across `count` new sessions, each in its own git worktree
+ * (sibling branches off the fan-out session's current HEAD), each already
+ * running the user's own command template against that prompt. Every new
+ * session is wired to this client exactly like a normal session_create, so
+ * they show up in the existing Terminals list immediately — no separate
+ * "fan-out view" needed.
+ *
+ * Termora targets any CLI agent, not a specific brand — Claude Code,
+ * OpenCode, Codex, aider, Cline, Hermes, whatever the user actually runs —
+ * so it never assumes a particular invocation flag; see
+ * buildAgentCommandLine.
+ *
+ * Whether the template runs interactively or non-interactively is entirely
+ * up to what the user puts in it. Non-interactive (print/run/exec-style)
+ * flags are recommended for unattended fan-out: driving N interactive TUIs
+ * through their own first-run prompts unattended is fragile in exactly the
+ * way a human at the keyboard is not.
+ */
 async function handleWorktreeFanout(
   ws: WebSocket,
   sessionId: string,
@@ -490,8 +518,12 @@ async function handleWorktreeFanout(
     sendError(ws, `Prompt too long (max ${String(MAX_FANOUT_PROMPT_LENGTH)} characters)`);
     return;
   }
-  if (typeof agentCommand !== 'string' || !/^[\w-]+$/.test(agentCommand)) {
+  if (typeof agentCommand !== 'string' || !agentCommand.trim() || agentCommand.includes('\n')) {
     sendError(ws, 'Invalid agent command');
+    return;
+  }
+  if (agentCommand.length > MAX_AGENT_COMMAND_LENGTH) {
+    sendError(ws, `Agent command too long (max ${String(MAX_AGENT_COMMAND_LENGTH)} characters)`);
     return;
   }
   if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > MAX_FANOUT_COUNT) {
@@ -532,7 +564,7 @@ async function handleWorktreeFanout(
     wireSessionToClient(ws, session, subscriptions);
 
     ptyManager.write(session.id, `cd ${shellQuote(w.path)} && clear\n`);
-    ptyManager.write(session.id, `${shellQuote(agentCommand)} -p ${shellQuote(prompt)}\n`);
+    ptyManager.write(session.id, `${buildAgentCommandLine(agentCommand, prompt)}\n`);
   }
 
   send(ws, {

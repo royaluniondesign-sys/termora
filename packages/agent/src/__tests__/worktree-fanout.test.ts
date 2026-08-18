@@ -88,10 +88,22 @@ describe('worktree fan-out over a real WebSocket', () => {
     await rm(parentDir, { recursive: true, force: true });
   });
 
+  // Every message a socket receives is buffered here as it arrives, so a
+  // waitFor() registered *after* a message already came in (a real race:
+  // e.g. the fanned-out session's own 'session' message can arrive before
+  // the code even finishes awaiting 'worktree_fanout_started') still finds
+  // it, instead of silently missing an event nothing was listening for yet.
+  const messageLog = new WeakMap<WebSocket, ServerMessage[]>();
+
   async function connectAuthenticated(): Promise<WebSocket> {
     const { token, jti } = await createSessionJWT({ authMethod: 'bootstrap' }, config.jwtSecret);
     statements.insertSession.run(jti, jti, 'Test device');
     const ws = new WebSocket(`${wsUrl}/?token=${token}`);
+    const log: ServerMessage[] = [];
+    messageLog.set(ws, log);
+    ws.on('message', (raw: Buffer) => {
+      log.push(JSON.parse(raw.toString('utf-8')) as ServerMessage);
+    });
     await new Promise<void>((resolve, reject) => {
       ws.once('open', () => resolve());
       ws.once('error', reject);
@@ -101,16 +113,26 @@ describe('worktree fan-out over a real WebSocket', () => {
 
   function waitFor(ws: WebSocket, predicate: (msg: ServerMessage) => boolean, timeoutMs = 8000): Promise<ServerMessage> {
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('timeout waiting for message')), timeoutMs);
-      const onMessage = (raw: Buffer) => {
-        const msg = JSON.parse(raw.toString('utf-8')) as ServerMessage;
-        if (predicate(msg)) {
-          clearTimeout(timer);
-          ws.off('message', onMessage);
-          resolve(msg);
+      const log = messageLog.get(ws) ?? [];
+      const already = log.find(predicate);
+      if (already) { resolve(already); return; }
+
+      let checkedUpTo = log.length;
+      const timer = setInterval(() => {
+        const current = messageLog.get(ws) ?? [];
+        for (; checkedUpTo < current.length; checkedUpTo++) {
+          if (predicate(current[checkedUpTo])) {
+            clearInterval(timer);
+            clearTimeout(giveUp);
+            resolve(current[checkedUpTo]);
+            return;
+          }
         }
-      };
-      ws.on('message', onMessage);
+      }, 20);
+      const giveUp = setTimeout(() => {
+        clearInterval(timer);
+        reject(new Error('timeout waiting for message'));
+      }, timeoutMs);
     });
   }
 
@@ -141,6 +163,92 @@ describe('worktree fan-out over a real WebSocket', () => {
 
       const onDisk = await listFanoutWorktrees(repoRoot);
       expect(onDisk).toHaveLength(2);
+      for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
+    } finally {
+      ws.close();
+    }
+  });
+
+  it('honours a full command template, not just a bare CLI name', async () => {
+    // Termora targets any agentic CLI, not specifically Claude/OpenCode —
+    // different tools take their prompt differently (`claude -p`,
+    // `opencode run`, `aider --message`, a bare trailing argument, ...), so
+    // the agent field is a full command template with a {prompt}
+    // placeholder, substituted verbatim rather than Termora assuming a flag.
+    const originalHome = process.env.HOME;
+    process.env.HOME = repoRoot;
+    const ws = await connectAuthenticated();
+    try {
+      ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
+      const created = await waitFor(ws, (m) => m.type === 'session');
+      const sourceId = (created as { sessionId: string }).sessionId;
+      process.env.HOME = originalHome;
+
+      ws.send(JSON.stringify({
+        type: 'worktree_fanout',
+        sessionId: sourceId,
+        prompt: 'hello world',
+        agentCommand: 'echo TEMPLATE-{prompt}',
+        count: 1,
+      }));
+      await waitFor(ws, (m) => m.type === 'worktree_fanout_started' || m.type === 'error');
+
+      // Find the fanned-out session (a 'session' message distinct from the
+      // source session) and confirm its actual shell output reflects the
+      // substituted template rather than some assumed flag.
+      const fanoutSession = await waitFor(
+        ws,
+        (m) => m.type === 'session' && (m as { sessionId: string }).sessionId !== sourceId,
+      ) as { sessionId: string };
+
+      await waitFor(
+        ws,
+        (m) => m.type === 'stdout'
+          && (m as { sessionId: string }).sessionId === fanoutSession.sessionId
+          && (m as { data: string }).data.includes('TEMPLATE-hello world'),
+      );
+
+      const onDisk = await listFanoutWorktrees(repoRoot);
+      for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
+    } finally {
+      ws.close();
+    }
+  });
+
+  it('appends the prompt as a trailing argument when the template has no {prompt}', async () => {
+    // A command with no {prompt} placeholder at all should still work —
+    // covers CLIs that just take the prompt as a bare final argument.
+    const originalHome = process.env.HOME;
+    process.env.HOME = repoRoot;
+    const ws = await connectAuthenticated();
+    try {
+      ws.send(JSON.stringify({ type: 'session_create', shell: 'zsh' }));
+      const created = await waitFor(ws, (m) => m.type === 'session');
+      const sourceId = (created as { sessionId: string }).sessionId;
+      process.env.HOME = originalHome;
+
+      ws.send(JSON.stringify({
+        type: 'worktree_fanout',
+        sessionId: sourceId,
+        prompt: 'no placeholder here',
+        agentCommand: 'echo',
+        count: 1,
+      }));
+      await waitFor(ws, (m) => m.type === 'worktree_fanout_started');
+
+      const fanoutSession = await waitFor(
+        ws,
+        (m) => m.type === 'session' && (m as { sessionId: string }).sessionId !== sourceId,
+      ) as { sessionId: string };
+
+      await waitFor(
+        ws,
+        (m) => m.type === 'stdout'
+          && (m as { sessionId: string }).sessionId === fanoutSession.sessionId
+          && (m as { data: string }).data.includes('no placeholder here'),
+      );
+
+      const onDisk = await listFanoutWorktrees(repoRoot);
       for (const w of onDisk) await removeWorktree(repoRoot, w.path, true);
     } finally {
       ws.close();

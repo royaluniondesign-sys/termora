@@ -345,7 +345,17 @@ function KeyStrip({ onKey, keyboardMode, onKeyboardModeChange }: {
 
 // ── Fan-out modal ───────────────────────────────────────────────────────────
 
-const AGENT_OPTIONS = ['claude', 'opencode', 'codex'] as const;
+// Termora targets any CLI agent, not a specific brand — this is a starting
+// point for the datalist, not an allowlist. The field itself is free text:
+// type the full command exactly as you'd run it yourself, with {prompt}
+// wherever the prompt goes.
+const COMMAND_TEMPLATE_SUGGESTIONS = [
+  'claude -p {prompt}',
+  'opencode run {prompt}',
+  'codex exec {prompt}',
+  'aider --message {prompt}',
+  'gemini -p {prompt}',
+] as const;
 
 function FanOutModal({ sessionId, wsClient, messageBus, onClose }: {
   sessionId: string;
@@ -354,7 +364,7 @@ function FanOutModal({ sessionId, wsClient, messageBus, onClose }: {
   onClose: () => void;
 }) {
   const [prompt, setPrompt] = useState('');
-  const [agentCommand, setAgentCommand] = useState<string>(AGENT_OPTIONS[0]);
+  const [agentCommand, setAgentCommand] = useState<string>(COMMAND_TEMPLATE_SUGGESTIONS[0]);
   const [count, setCount] = useState(3);
   const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [resultText, setResultText] = useState('');
@@ -410,17 +420,26 @@ function FanOutModal({ sessionId, wsClient, messageBus, onClose }: {
                 fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box',
               }}
             />
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              <select
-                value={agentCommand}
-                onChange={(e) => setAgentCommand(e.target.value)}
-                style={{
-                  flex: 1, height: 32, borderRadius: 8, border: `1px solid ${S.border}`,
-                  background: S.surface, color: S.text1, fontSize: 11, paddingLeft: 8,
-                }}
-              >
-                {AGENT_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+            <input
+              type="text"
+              list="fanout-command-suggestions"
+              value={agentCommand}
+              onChange={(e) => setAgentCommand(e.target.value)}
+              placeholder="claude -p {prompt}"
+              spellCheck={false}
+              style={{
+                width: '100%', height: 32, borderRadius: 8, border: `1px solid ${S.border}`,
+                background: S.surface, color: S.text1, fontSize: 11, padding: '0 8px',
+                fontFamily: "'Geist Mono', monospace", boxSizing: 'border-box', marginBottom: 6,
+              }}
+            />
+            <datalist id="fanout-command-suggestions">
+              {COMMAND_TEMPLATE_SUGGESTIONS.map((opt) => <option key={opt} value={opt} />)}
+            </datalist>
+            <div style={{ fontSize: 9, color: S.text3, marginBottom: 12 }}>
+              Any CLI works — type the exact command you'd run yourself. {'{prompt}'} is replaced with the prompt below.
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${S.border}`,
                 borderRadius: 8, padding: '0 8px', background: S.surface,
