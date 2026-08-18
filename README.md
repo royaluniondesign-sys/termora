@@ -72,9 +72,10 @@ cd termora && npm run dev
         v
   +---------------------------+
   |  Tunnel (auto-selected)   |
-  |  1. ngrok (static URL)    |
-  |  2. localhost.run (SSH)   |  ← works instantly, no signup
-  |  3. Wi-Fi (LAN fallback)  |
+  |  1. cloudflared           |  ← no signup, no bandwidth cap
+  |  2. ngrok (static URL)    |
+  |  3. localhost.run (SSH)   |
+  |  4. Wi-Fi (LAN fallback)  |
   +----------+----------------+
              v
   +---------------------------+
@@ -105,8 +106,8 @@ termora is hardened at every layer:
 |-------|-----------|
 | **Authentication** | One-time bootstrap token (5-min TTL) + 7-day JWT rotation |
 | **Static token** | Persistent auth URL — share once, always works; embedded in QR |
-| **Rate limiting** | Auth endpoints: 10 req/15min per IP |
-| **Transport** | All traffic over HTTPS via ngrok or SSH tunnel |
+| **Rate limiting** | Auth endpoints: 10 req/15min per IP (proxy headers trusted only from loopback) |
+| **Transport** | All traffic over HTTPS via the active tunnel |
 | **Token comparison** | Constant-time to prevent timing attacks |
 | **Input validation** | Resize bounds (1–500 cols/rows), stdin capped at 1MB |
 | **Backpressure** | WebSocket buffer limit at 64KB — prevents OOM under load |
@@ -119,11 +120,11 @@ No accounts. No relay servers. No third-party access to your terminal.
 
 Your terminal goes with you — across devices, across networks, across countries.
 
-- **3-tier tunnel fallback** — ngrok → SSH (localhost.run) → Wi-Fi. Works instantly without any signup.
+- **4-tier tunnel fallback** — cloudflared → ngrok → SSH (localhost.run) → Wi-Fi. Works instantly without any signup.
 - **Static URL with ngrok** — same URL every session. Bookmark it. Add it to your phone's home screen as a PWA.
 - **One-click auth URL** — token embedded in URL. Share the link, scan once, never re-authenticate.
 - **Zero-config start** — `npm run dev` is all you need.
-- **Auto-recovery** — tunnel automatically reconnects after sleep/wake or network change.
+- **Auto-recovery** — every tunnel URL is health-checked before it is published, and falls through to the next method if it does not route. Reconnects after sleep/wake or network change.
 - **PWA install** — add to home screen, runs fullscreen, no browser chrome.
 
 ### Performance & Fluidity
@@ -171,8 +172,9 @@ termora was built with Claude Code in mind:
 - **6 skins** — iOS Terminal, MacBook Silver, Gamer RGB, Custom Painted, Amber Retro, Ice White
 
 ### Connectivity
-- **3-tier tunnel fallback** — ngrok → SSH (localhost.run) → local Wi-Fi
-- **Zero-config start** — works immediately; SSH tunnel needs no signup
+- **4-tier tunnel fallback** — cloudflared → ngrok → SSH (localhost.run) → local Wi-Fi
+- **Verified before published** — a tunnel that reports a URL it does not actually route is discarded automatically
+- **Zero-config start** — works immediately; cloudflared and SSH need no signup
 - **Static URL with ngrok** — same URL every time, bookmarkable for PWA
 - **Auto-recovery** — tunnel recreates after sleep/wake
 - **One-click auth URL** — token embedded in URL, share with any device
@@ -230,8 +232,23 @@ NGROK_STATIC_DOMAIN=your.ngrok-free.dev  # Free static domain from ngrok dashboa
 TERMORA_PORT=4030                     # Default: 4030
 TERMORA_NO_TMUX=1                     # Disable tmux integration
 TERMORA_NO_OPEN=1                     # Don't auto-open browser
-TUNNEL=ssh                            # Force SSH tunnel (skip ngrok)
+TUNNEL=cloudflared                    # Force a method: cloudflared | ngrok | ssh | local
 ```
+
+`WEB_PORT` exists for development only — `npm run dev` sets it so the tunnel
+reaches the Vite dev server instead of the agent. Leave it unset in production;
+the agent serves the built UI itself.
+
+```bash
+```
+
+**Install cloudflared** (optional, first tunnel choice — no account needed):
+```bash
+brew install cloudflared
+```
+Note: cloudflared's free quick tunnels (`*.trycloudflare.com`) are occasionally
+unroutable from some networks — the edge answers 404 while the connector reports
+success. termora detects this and moves on to the next method automatically.
 
 **Get a free ngrok static URL:**
 ```bash
@@ -248,9 +265,9 @@ ngrok config add-authtoken YOUR_TOKEN
 |-------|-----------|
 | Frontend | React 18, TypeScript, Vite 6, Tailwind CSS v4, xterm.js (WebGL) |
 | Backend | Node.js 20+, Express, ws, node-pty, tmux (control mode), better-sqlite3 |
-| Tunnel | @ngrok/ngrok SDK, localhost.run (SSH fallback) |
+| Tunnel | cloudflared, @ngrok/ngrok SDK, localhost.run (SSH fallback) |
 | Auth | jose (JWT), one-time bootstrap tokens, express-rate-limit |
-| Testing | Vitest (14 tests passing) |
+| Testing | Vitest (28 tests passing) |
 | Monorepo | Turborepo, npm workspaces |
 
 ## Project Structure
