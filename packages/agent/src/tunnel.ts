@@ -157,6 +157,33 @@ function createSSHTunnel(localPort: number): Promise<string> {
  *  2. SSH      — localhost.run via SSH, zero install, no account needed
  *  3. local    — local network IP, works when phone is on the same Wi-Fi
  */
+/** How long to wait for a freshly created tunnel to prove it routes traffic. */
+const TUNNEL_VERIFY_TIMEOUT_MS = 10_000;
+
+/**
+ * Checks that a tunnel URL actually reaches this agent.
+ *
+ * A tunnel process can report a URL it never serves: cloudflared quick tunnels
+ * print a hostname and register a connection while the edge still 404s every
+ * request. Without this check the agent publishes a dead URL and never falls
+ * back to the next method.
+ */
+export async function verifyTunnelUrl(
+  url: string,
+  timeoutMs = TUNNEL_VERIFY_TIMEOUT_MS,
+): Promise<boolean> {
+  try {
+    const response = await fetch(`${url}/api/health`, {
+      signal: AbortSignal.timeout(timeoutMs),
+      redirect: 'follow',
+    });
+    return response.ok;
+  } catch {
+    // DNS failure, connection refused, timeout — all mean "not routing".
+    return false;
+  }
+}
+
 export async function createTunnel(
   port: number,
   ngrokAuthtoken?: string,
@@ -179,8 +206,14 @@ export async function createTunnel(
   if (forcedMethod !== 'ngrok' && forcedMethod !== 'ssh') {
     try {
       const url = await createCloudflaredTunnel(port);
-      currentTunnel = { url, method: 'cloudflared' };
-      return currentTunnel;
+      if (await verifyTunnelUrl(url)) {
+        currentTunnel = { url, method: 'cloudflared' };
+        return currentTunnel;
+      }
+      // Quick tunnels sometimes report a URL the edge never routes.
+      console.log('  cloudflared URL did not route, trying next method...');
+      activeCloudflaredProcess?.kill();
+      activeCloudflaredProcess = null;
     } catch {
       // cloudflared not installed or failed — try ngrok
     }
@@ -197,9 +230,14 @@ export async function createTunnel(
       const listener = await ngrok.forward(ngrokOpts);
       activeNgrokListener = listener;
       const url = listener.url();
-      if (url) {
+      if (url && await verifyTunnelUrl(url)) {
         currentTunnel = { url, method: 'ngrok' };
         return currentTunnel;
+      }
+      if (url) {
+        console.log('  ngrok URL did not route, trying next method...');
+        try { await ngrok.disconnect(); } catch { /* ignore */ }
+        activeNgrokListener = null;
       }
     } catch {
       // ngrok failed — try SSH
@@ -209,8 +247,13 @@ export async function createTunnel(
   // 3. localhost.run via SSH (pre-installed on macOS, no account needed)
   try {
     const url = await createSSHTunnel(port);
-    currentTunnel = { url, method: 'ssh' };
-    return currentTunnel;
+    if (await verifyTunnelUrl(url)) {
+      currentTunnel = { url, method: 'ssh' };
+      return currentTunnel;
+    }
+    console.log('  SSH tunnel URL did not route, falling back to local...');
+    activeSSHProcess?.kill();
+    activeSSHProcess = null;
   } catch {
     // SSH failed — fall back to local
   }
