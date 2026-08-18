@@ -178,6 +178,11 @@ termora is built to feel native, not laggy:
 
 ### Claude Code on Your Phone
 
+<div align="center">
+<img src="docs/images/claude-code-demo.gif" width="320" alt="Claude Code answering a real question, streamed live through termora" />
+<br /><sub>Real capture — Claude Code running on the host machine, asked a question from termora</sub>
+</div>
+
 termora was built with Claude Code in mind:
 
 - Watch Claude Code work in real time from your phone

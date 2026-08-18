@@ -51,3 +51,4 @@ apps/landing/
 
 # Demo video generator (Remotion — 500MB+ with deps)
 apps/demo-video/
+.omo/
