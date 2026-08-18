@@ -263,7 +263,7 @@ function DesktopSidebar({ current, onChange, onNewSession, sessionCount, connect
       </nav>
 
       <div style={{ padding: '10px 14px', borderTop: `1px solid ${S.border}` }}>
-        <span style={{ fontSize: 9, color: S.text3 }}>v0.1.0 — RUD Lab</span>
+        <span style={{ fontSize: 9, color: S.text3 }}>v{__APP_VERSION__} — RUD Lab</span>
       </div>
     </div>
   );

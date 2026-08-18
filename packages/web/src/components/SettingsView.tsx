@@ -600,7 +600,7 @@ export function SettingsView({
 
         {/* Footer */}
         <div style={{ textAlign: 'center', marginTop: 28, paddingBottom: 4 }}>
-          <span style={{ fontSize: 9, color: S.text3 }}>termora v0.1.0 — by RUD Lab</span>
+          <span style={{ fontSize: 9, color: S.text3 }}>termora v{__APP_VERSION__} — by RUD Lab</span>
         </div>
       </div>
     </div>

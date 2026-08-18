@@ -4,7 +4,7 @@ import { createServer as createNetServer, createConnection } from 'node:net';
 import { createServer, type Server as HttpServer } from 'node:http';
 import { WebSocketServer } from 'ws';
 import { join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { hostname } from 'node:os';
 import {
   generateBootstrapToken,
@@ -16,6 +16,22 @@ import { createSSERouter } from './sse-handler.js';
 import { getTunnelInfo } from './tunnel.js';
 import type { DbStatements } from './db.js';
 import type { AgentConfig } from './config.js';
+
+/**
+ * Reads the running version straight from package.json instead of a
+ * hardcoded literal, so /api/info can never drift from what's installed.
+ */
+function readPackageVersion(): string {
+  try {
+    const pkgPath = join(import.meta.dirname, '..', '..', '..', 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { version?: string };
+    return pkg.version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
+
+const APP_VERSION = readPackageVersion();
 
 export interface ServerContext {
   app: Express;
@@ -76,7 +92,7 @@ export function createAppServer(
       tunnelMethod: tunnel?.method ?? null,
       authUrl,
       machineName: hostname(),
-      version: '0.1.0',
+      version: APP_VERSION,
     });
   });
 

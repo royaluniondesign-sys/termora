@@ -1,7 +1,7 @@
 {
   "name": "@termora/cli",
-  "version": "0.1.0",
-  "description": "termora CLI — bootstrap and manage your termora instance",
+  "version": "0.2.0",
+  "description": "termora CLI \u2014 bootstrap and manage your termora instance",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.2.0 (2026-08-18)
+
+### Fixed
+- **Tunnel published a dead URL in production** — `WEB_PORT` (dev-only, points at the Vite dev server) was used unconditionally as the tunnel target; production `.env` files inherited it from `.env.example` and the public URL 404'd on every request while the agent itself was healthy. `resolveTunnelPort()` now falls back to the agent's own port unless something is actually serving `WEB_PORT`.
+- **`TERMORA_PORT` (the documented variable) was silently ignored** — the loader only read `PORT`. Both are honoured now, `TERMORA_PORT` taking precedence.
+- **Auth rate limit was bypassable** — `trust proxy: true` let a client's own `X-Forwarded-For` header override its real IP, so rotating that header gave every auth attempt a fresh rate-limit bucket. Now trusts only `loopback` (the tunnel process).
+- **`Access-Control-Allow-Origin: '*'` on every response** — including `/api/info`, which embeds the persistent auth token — with no legitimate cross-origin caller to justify it (the SPA is always same-origin). Removed; added `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` as baseline hardening instead.
+- **WebSocket client gave up reconnecting after ~5.5 minutes** — contradicted its own "no hard cap" docstring. A phone that stays foregrounded through a longer outage now keeps retrying indefinitely at a 30s-capped backoff.
+- **A tunnel could report a URL it never actually routed** — cloudflared quick tunnels sometimes register a connection while the edge 404s every request. Each tunnel method is now health-checked before being published, and discarded in favor of the next method if it doesn't respond.
+- Fixed `npm ci` failing on every CI run since 2026-07-10 — `@rollup/rollup-darwin-x64` and `lightningcss-darwin-x64` were pinned as explicit devDependencies, forcing every install (including CI's Linux runners) onto macOS Intel binaries neither package needs pinned.
+
+### Changed
+- Dependencies updated: better-sqlite3 12.10→12.11, eslint 9→10, prettier 3.3→3.9, turbo 2.3→2.10, vitest 4.1.2→4.1.10, typescript 5.7→6.0 (typescript-eslint's peer range blocks 7.x), typescript-eslint 8.0→8.67.
+- CI now runs the test suite (it previously ran lint/typecheck/build only) and covers Node 24 alongside 20/22.
+- App version is read from the workspace root `package.json` at build/runtime instead of being hardcoded in five separate places — it can no longer drift out of sync with what's installed.
+- `npm audit fix` applied — cleared 7 advisories (5 high) in transitive dev dependencies.
+
+### Docs
+- README screenshots replaced with real captures of the current app (the gallery was still showing the pre-redesign UI); added a short GIF tour and a real Claude Code session demo.
+- Added a termora-vs-Termux comparison section.
+- Quickstart rewritten as a beginner-friendly walkthrough.
+
 ## 0.1.0 (2026-06-30)
 
 ### Design System

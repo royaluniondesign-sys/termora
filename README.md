@@ -4,6 +4,7 @@
 
 <br /><br />
 
+[![Release](https://img.shields.io/github/v/release/royaluniondesign-sys/termora?label=release)](https://github.com/royaluniondesign-sys/termora/releases/latest)
 [![CI](https://github.com/royaluniondesign-sys/termora/actions/workflows/ci.yml/badge.svg)](https://github.com/royaluniondesign-sys/termora/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green?logo=node.js&logoColor=white)](https://nodejs.org)
