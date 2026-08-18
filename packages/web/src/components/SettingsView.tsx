@@ -260,6 +260,8 @@ function ConnectionSection({ connectionStatus, latencyMs }: {
   latencyMs: number | null;
 }) {
   const { info, refresh } = useConnectionInfo();
+  // Local binding so the narrowing below survives into the copy handler's closure.
+  const authUrl = info.authUrl;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async (text: string) => {
@@ -293,7 +295,7 @@ function ConnectionSection({ connectionStatus, latencyMs }: {
       </Card>
 
       {/* Auth URL */}
-      {info.authUrl && (
+      {authUrl && (
         <Card style={{ marginTop: 8 }}>
           <div style={{ padding: '10px 12px' }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: S.text3, letterSpacing: 0.7, marginBottom: 7 }}>
@@ -307,11 +309,11 @@ function ConnectionSection({ connectionStatus, latencyMs }: {
                 border: `1px solid ${S.border}`,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block',
               }}>
-                {info.authUrl}
+                {authUrl}
               </code>
               <button
                 type="button"
-                onClick={() => handleCopy(info.authUrl!)}
+                onClick={() => handleCopy(authUrl)}
                 style={{
                   height: 30, padding: '0 10px', borderRadius: 6, flexShrink: 0,
                   border: `1px solid ${copied ? S.success : S.primary}`,
