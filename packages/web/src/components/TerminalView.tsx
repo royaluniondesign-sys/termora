@@ -21,12 +21,13 @@ const S = {
 
 // ── Compact header (36px) ────────────────────────────────────────────────────
 
-function CompactHeader({ sessionName, latencyMs, onBack, onOpenSettings, onCopyScreen }: {
+function CompactHeader({ sessionName, latencyMs, onBack, onOpenSettings, onCopyScreen, onFanOut }: {
   sessionName: string;
   latencyMs: number | null | undefined;
   onBack: () => void;
   onOpenSettings: () => void;
   onCopyScreen: () => void;
+  onFanOut: () => void;
 }) {
   const latencyColor = latencyMs == null ? S.text3
     : latencyMs < 30 ? S.success
@@ -101,6 +102,25 @@ function CompactHeader({ sessionName, latencyMs, onBack, onOpenSettings, onCopyS
           <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </button>
+        {/* Fan out to parallel worktrees */}
+        <button
+          type="button"
+          onClick={onFanOut}
+          title="Fan out to parallel agents"
+          style={{
+            width: 28, height: 28, borderRadius: 6, border: 'none',
+            background: 'transparent', color: S.text3,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', touchAction: 'manipulation',
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="6" cy="12" r="2.5" />
+            <circle cx="18" cy="5" r="2.5" />
+            <circle cx="18" cy="19" r="2.5" />
+            <path d="M8.2 10.8 15.8 6.4M8.2 13.2l7.6 4.4" />
           </svg>
         </button>
         {/* Settings */}
@@ -323,6 +343,141 @@ function KeyStrip({ onKey, keyboardMode, onKeyboardModeChange }: {
   );
 }
 
+// ── Fan-out modal ───────────────────────────────────────────────────────────
+
+const AGENT_OPTIONS = ['claude', 'opencode', 'codex'] as const;
+
+function FanOutModal({ sessionId, wsClient, messageBus, onClose }: {
+  sessionId: string;
+  wsClient: import('../lib/ws-client').TerminalWSClient | null;
+  messageBus: import('../lib/message-bus').MessageBus;
+  onClose: () => void;
+}) {
+  const [prompt, setPrompt] = useState('');
+  const [agentCommand, setAgentCommand] = useState<string>(AGENT_OPTIONS[0]);
+  const [count, setCount] = useState(3);
+  const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [resultText, setResultText] = useState('');
+
+  useEffect(() => {
+    if (status !== 'running') return;
+    return messageBus.subscribe((msg) => {
+      if (msg.type === 'worktree_fanout_started') {
+        setStatus('done');
+        setResultText(`Started ${String(msg.count)} agent${msg.count === 1 ? '' : 's'} — check Terminals to watch them.`);
+      } else if (msg.type === 'error') {
+        setStatus('error');
+        setResultText(msg.message);
+      }
+    });
+  }, [status, messageBus]);
+
+  const submit = useCallback(() => {
+    const trimmed = prompt.trim();
+    if (!trimmed || !wsClient) return;
+    setStatus('running');
+    wsClient.send({ type: 'worktree_fanout', sessionId, prompt: trimmed, agentCommand, count });
+  }, [prompt, agentCommand, count, sessionId, wsClient]);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 40,
+      background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 340, background: S.surface2, border: `1px solid ${S.border}`,
+        borderRadius: 12, padding: 16,
+      }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: S.text1, marginBottom: 4 }}>
+          Fan out to parallel agents
+        </div>
+        <div style={{ fontSize: 10, color: S.text3, marginBottom: 12, lineHeight: 1.5 }}>
+          Runs the same prompt in {count} isolated git worktrees, each on its own branch —
+          compare the results and keep the winner.
+        </div>
+
+        {status === 'idle' && (
+          <>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="What should each agent try?"
+              rows={3}
+              style={{
+                width: '100%', resize: 'none', borderRadius: 8, border: `1px solid ${S.border}`,
+                background: S.surface, color: S.text1, fontSize: 12, padding: 8,
+                fontFamily: 'inherit', marginBottom: 10, boxSizing: 'border-box',
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <select
+                value={agentCommand}
+                onChange={(e) => setAgentCommand(e.target.value)}
+                style={{
+                  flex: 1, height: 32, borderRadius: 8, border: `1px solid ${S.border}`,
+                  background: S.surface, color: S.text1, fontSize: 11, paddingLeft: 8,
+                }}
+              >
+                {AGENT_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${S.border}`,
+                borderRadius: 8, padding: '0 8px', background: S.surface,
+              }}>
+                <button type="button" onClick={() => setCount((c) => Math.max(2, c - 1))}
+                  style={{ background: 'none', border: 'none', color: S.text2, cursor: 'pointer', fontSize: 14 }}>−</button>
+                <span style={{ fontSize: 12, color: S.text1, width: 14, textAlign: 'center' }}>{count}</span>
+                <button type="button" onClick={() => setCount((c) => Math.min(8, c + 1))}
+                  style={{ background: 'none', border: 'none', color: S.text2, cursor: 'pointer', fontSize: 14 }}>+</button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={onClose} style={{
+                flex: 1, height: 34, borderRadius: 8, border: `1px solid ${S.border}`,
+                background: 'transparent', color: S.text2, fontSize: 12, cursor: 'pointer',
+              }}>
+                Cancel
+              </button>
+              <button type="button" onClick={submit} disabled={!prompt.trim()} style={{
+                flex: 1, height: 34, borderRadius: 8, border: 'none',
+                background: prompt.trim() ? S.primary : S.surface3,
+                color: prompt.trim() ? '#000' : S.text3, fontSize: 12, fontWeight: 600,
+                cursor: prompt.trim() ? 'pointer' : 'default',
+              }}>
+                Fan Out
+              </button>
+            </div>
+          </>
+        )}
+
+        {status === 'running' && (
+          <div style={{ fontSize: 11, color: S.text2, textAlign: 'center', padding: '16px 0' }}>
+            Creating worktrees and starting agents…
+          </div>
+        )}
+
+        {(status === 'done' || status === 'error') && (
+          <>
+            <div style={{
+              fontSize: 11, color: status === 'error' ? S.error : S.success,
+              marginBottom: 12, lineHeight: 1.5,
+            }}>
+              {resultText}
+            </div>
+            <button type="button" onClick={onClose} style={{
+              width: '100%', height: 34, borderRadius: 8, border: 'none',
+              background: S.primary, color: '#000', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            }}>
+              Done
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 
 export function TerminalView({
@@ -344,6 +499,7 @@ export function TerminalView({
 
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [fanOutOpen, setFanOutOpen] = useState(false);
 
   // Replay history then subscribe to new output
   useEffect(() => {
@@ -423,7 +579,7 @@ export function TerminalView({
 
   return (
     <div
-      style={{ height: '100%', display: 'flex', flexDirection: 'column', background: S.bg, overflow: 'hidden' }}
+      style={{ height: '100%', display: 'flex', flexDirection: 'column', background: S.bg, overflow: 'hidden', position: 'relative' }}
       data-skin={skin}
     >
       <CompactHeader
@@ -432,7 +588,17 @@ export function TerminalView({
         onBack={handleBack}
         onOpenSettings={onOpenSettings}
         onCopyScreen={handleCopyScreen}
+        onFanOut={() => setFanOutOpen(true)}
       />
+
+      {fanOutOpen && (
+        <FanOutModal
+          sessionId={session.id}
+          wsClient={wsClient}
+          messageBus={messageBus}
+          onClose={() => setFanOutOpen(false)}
+        />
+      )}
 
       {/* xterm.js terminal */}
       <div ref={containerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }} />

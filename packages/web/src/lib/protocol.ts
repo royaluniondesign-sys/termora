@@ -10,7 +10,9 @@ export type ClientMessage =
   | { type: 'session_rename'; sessionId: string; name: string }
   | { type: 'session_subscribe'; sessionId: string }
   | { type: 'session_list' }
-  | { type: 'ping' };
+  | { type: 'ping' }
+  | { type: 'worktree_fanout'; sessionId: string; prompt: string; agentCommand: string; count: number }
+  | { type: 'worktree_cleanup'; sessionId: string };
 
 export type ServerMessage =
   | { type: 'stdout'; sessionId: string; data: string }
@@ -23,4 +25,6 @@ export type ServerMessage =
     }
   | { type: 'session_update'; sessionId: string; name: string; cwd: string; status: 'run' | 'idle' }
   | { type: 'error'; message: string }
-  | { type: 'pong' };
+  | { type: 'pong' }
+  | { type: 'worktree_fanout_started'; count: number; branches: string[] }
+  | { type: 'worktree_cleanup_done'; removed: number };

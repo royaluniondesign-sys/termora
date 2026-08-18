@@ -182,3 +182,22 @@ export async function capturePaneContentAsync(tmuxName: string): Promise<string>
     return '';
   }
 }
+
+/**
+ * Asks tmux for a pane's actual current working directory. tmux tracks this
+ * itself at the OS level — unlike the OSC 7 tracking used for the session's
+ * display cwd, it does not depend on the shell being configured to report
+ * its own location, so this stays correct even in a bare zsh with no shell
+ * integration.
+ */
+export async function getTmuxPaneCwd(tmuxName: string): Promise<string | null> {
+  try {
+    const path = await execTmuxAsync(
+      ['-L', TMUX_SOCKET, 'display-message', '-p', '-t', tmuxName, '-F', '#{pane_current_path}'],
+      'utf-8',
+    );
+    return path.trim() || null;
+  } catch {
+    return null;
+  }
+}

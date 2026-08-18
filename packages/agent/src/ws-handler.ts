@@ -5,6 +5,16 @@ import { verifyJWT } from './auth.js';
 import type { DbStatements } from './db.js';
 import { PTYManager, type PTYSession } from './pty-manager.js';
 import type { ClientMessage, ServerMessage, ShellType } from './types.js';
+import {
+  isGitRepo,
+  getRepoRoot,
+  slugify,
+  createFanoutWorktrees,
+  listFanoutWorktrees,
+  removeWorktree,
+} from './worktree.js';
+import { getTmuxPaneCwd } from './tmux.js';
+import { getProcessCwd } from './process-cwd.js';
 
 /** WebSocket close codes. */
 const WS_CLOSE_UNAUTHORIZED = 4001;
@@ -164,6 +174,17 @@ function handleMessage(
       handleSessionList(ws, ptyManager);
       break;
 
+    case 'worktree_fanout':
+      void handleWorktreeFanout(
+        ws, message.sessionId, message.prompt, message.agentCommand, message.count,
+        ptyManager, subscriptions,
+      );
+      break;
+
+    case 'worktree_cleanup':
+      void handleWorktreeCleanup(ws, message.sessionId, ptyManager);
+      break;
+
     case 'stdin':
       handleStdin(ws, message.sessionId, message.data, ptyManager);
       break;
@@ -195,29 +216,39 @@ function handleSessionCreate(
     return;
   }
 
-  // Subscribe this client to the new session
+  wireSessionToClient(ws, session, subscriptions);
+}
+
+/**
+ * Subscribes `ws` to a session's output/metadata/exit events and sends the
+ * initial `session` message + buffer replay. Shared by session_create and
+ * worktree_fanout — both need every newly created session to behave
+ * identically from the client's point of view.
+ */
+function wireSessionToClient(
+  ws: WebSocket,
+  session: PTYSession,
+  subscriptions: SubscriptionMap,
+): void {
   const clientSubs = subscriptions.get(ws);
   if (clientSubs) {
     clientSubs.add(session.id);
   }
 
-  // Send session info back to client
   send(ws, {
     type: 'session',
     sessionId: session.id,
-    shell,
+    shell: session.shell,
     pid: session.pty.pid,
     name: session.name,
     cwd: session.cwd,
     status: session.status,
   });
 
-  // Replay buffer for reconnection
   for (const chunk of session.buffer) {
     send(ws, { type: 'stdout', sessionId: session.id, data: chunk });
   }
 
-  // Stream PTY output to this WebSocket client
   session.onData((data: string) => {
     const subs = subscriptions.get(ws);
     if (subs?.has(session.id)) {
@@ -225,7 +256,6 @@ function handleSessionCreate(
     }
   });
 
-  // Stream session metadata updates to this WebSocket client
   session.onUpdate((meta) => {
     const subs = subscriptions.get(ws);
     if (subs?.has(session.id)) {
@@ -233,7 +263,6 @@ function handleSessionCreate(
     }
   });
 
-  // Notify client when the session exits
   session.onExit((event) => {
     send(ws, {
       type: 'exit',
@@ -393,6 +422,174 @@ function handleResize(
     const errMsg = err instanceof Error ? err.message : 'Resize failed';
     sendError(ws, errMsg);
   }
+}
+
+/** Upper bound on how many worktrees one fan-out request can create. */
+const MAX_FANOUT_COUNT = 8;
+
+/** Upper bound on prompt length — this becomes a shell argument and a git
+ *  branch name component; a very long prompt is almost certainly a mistake
+ *  or abuse, not a real request. */
+const MAX_FANOUT_PROMPT_LENGTH = 2000;
+
+/**
+ * Wraps a value in single quotes for safe use as one shell word, escaping
+ * any embedded single quotes. The prompt/agent command/path here all come
+ * from the session's own owner (already authenticated), so this isn't a
+ * trust boundary — it's about not letting a prompt containing `'` or `&&`
+ * silently corrupt the command line it's spliced into.
+ */
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, String.raw`'\''`)}'`;
+}
+
+/**
+ * Fans one prompt across `count` new sessions, each in its own git worktree
+ * (sibling branches off the fan-out session's current HEAD), each already
+ * running `agentCommand -p "<prompt>"`. Every new session is wired to this
+ * client exactly like a normal session_create, so they show up in the
+ * existing Terminals list immediately — no separate "fan-out view" needed.
+ *
+ * Runs the agent in print/non-interactive mode deliberately: driving N
+ * interactive TUIs through their own first-run prompts unattended is
+ * fragile in exactly the way a human at the keyboard is not; -p has no
+ * such gate and exits cleanly once done.
+ */
+/**
+ * Resolves a session's actual current directory by asking the OS/tmux
+ * directly, rather than trusting session.cwd (OSC 7 tracking, which stays
+ * stale on a shell with no shell-integration hook configured). Falls back
+ * to session.cwd only if the live lookup itself fails.
+ */
+async function resolveSessionCwd(session: PTYSession): Promise<string> {
+  const live = session.tmuxName
+    ? await getTmuxPaneCwd(session.tmuxName)
+    : await getProcessCwd(session.pty.pid);
+  return live ?? session.cwd;
+}
+
+async function handleWorktreeFanout(
+  ws: WebSocket,
+  sessionId: string,
+  prompt: unknown,
+  agentCommand: unknown,
+  count: unknown,
+  ptyManager: PTYManager,
+  subscriptions: SubscriptionMap,
+): Promise<void> {
+  const source = ptyManager.get(sessionId);
+  if (!source) {
+    sendError(ws, `Session not found: ${sessionId}`);
+    return;
+  }
+  if (typeof prompt !== 'string' || !prompt.trim()) {
+    sendError(ws, 'Prompt is required');
+    return;
+  }
+  if (prompt.length > MAX_FANOUT_PROMPT_LENGTH) {
+    sendError(ws, `Prompt too long (max ${String(MAX_FANOUT_PROMPT_LENGTH)} characters)`);
+    return;
+  }
+  if (typeof agentCommand !== 'string' || !/^[\w-]+$/.test(agentCommand)) {
+    sendError(ws, 'Invalid agent command');
+    return;
+  }
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > MAX_FANOUT_COUNT) {
+    sendError(ws, `count must be an integer between 1 and ${String(MAX_FANOUT_COUNT)}`);
+    return;
+  }
+
+  let repoRoot: string;
+  try {
+    const cwd = await resolveSessionCwd(source);
+    if (!(await isGitRepo(cwd))) {
+      sendError(ws, `Not a git repository: ${cwd}`);
+      return;
+    }
+    repoRoot = await getRepoRoot(cwd);
+  } catch (err) {
+    sendError(ws, err instanceof Error ? err.message : 'Failed to resolve git repository');
+    return;
+  }
+
+  const slug = slugify(prompt);
+
+  let worktrees;
+  try {
+    worktrees = await createFanoutWorktrees(repoRoot, count, slug);
+  } catch (err) {
+    sendError(ws, err instanceof Error ? `Failed to create worktrees: ${err.message}` : 'Failed to create worktrees');
+    return;
+  }
+
+  for (const w of worktrees) {
+    let session: PTYSession;
+    try {
+      session = ptyManager.create(source.shell, 80, 24, `fanout-${String(w.index)}`);
+    } catch {
+      continue; // best-effort: skip a slot that failed to spawn, keep the rest going
+    }
+    wireSessionToClient(ws, session, subscriptions);
+
+    ptyManager.write(session.id, `cd ${shellQuote(w.path)} && clear\n`);
+    ptyManager.write(session.id, `${shellQuote(agentCommand)} -p ${shellQuote(prompt)}\n`);
+  }
+
+  send(ws, {
+    type: 'worktree_fanout_started',
+    count: worktrees.length,
+    branches: worktrees.map((w) => w.branch),
+  });
+}
+
+/**
+ * Removes every fan-out worktree (branch under `fanout/`) for the repo the
+ * given session is inside — the cleanup step once you've picked a winner
+ * and no longer need the losing runs' isolated directories.
+ */
+async function handleWorktreeCleanup(
+  ws: WebSocket,
+  sessionId: string,
+  ptyManager: PTYManager,
+): Promise<void> {
+  const source = ptyManager.get(sessionId);
+  if (!source) {
+    sendError(ws, `Session not found: ${sessionId}`);
+    return;
+  }
+
+  let repoRoot: string;
+  try {
+    const cwd = await resolveSessionCwd(source);
+    if (!(await isGitRepo(cwd))) {
+      sendError(ws, `Not a git repository: ${cwd}`);
+      return;
+    }
+    repoRoot = await getRepoRoot(cwd);
+  } catch (err) {
+    sendError(ws, err instanceof Error ? err.message : 'Failed to resolve git repository');
+    return;
+  }
+
+  let removed = 0;
+  try {
+    const worktrees = await listFanoutWorktrees(repoRoot);
+    for (const w of worktrees) {
+      try {
+        await removeWorktree(repoRoot, w.path, true);
+        removed++;
+      } catch {
+        // Left in place — surfaced only via a short final count. A worktree
+        // that fails to remove (e.g. a process still using it) shouldn't
+        // block cleaning up the rest.
+      }
+    }
+  } catch (err) {
+    sendError(ws, err instanceof Error ? err.message : 'Failed to list worktrees');
+    return;
+  }
+
+  send(ws, { type: 'worktree_cleanup_done', removed });
 }
 
 export { WS_CLOSE_UNAUTHORIZED, WS_CLOSE_NORMAL };
