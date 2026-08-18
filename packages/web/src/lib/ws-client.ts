@@ -24,9 +24,6 @@ export interface WSClientOptions {
   onUnauthorized?: () => void;
 }
 
-/** Max reconnect attempts before giving up (user can still retry manually). */
-const MAX_RECONNECT_ATTEMPTS = 15;
-
 /** Interval between application-level ping messages (ms). */
 const PING_INTERVAL = 25_000;
 
@@ -268,12 +265,11 @@ export class TerminalWSClient {
     // Already have a pending reconnect scheduled
     if (this.reconnectTimer !== null) return;
 
-    // Give up after max attempts (user can still forceReconnect)
-    if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      this.onStatusChange('disconnected');
-      return;
-    }
-
+    // Never give up on its own: a phone that loses signal in a tunnel or
+    // sleeps for an hour should still be reconnected on its own once
+    // connectivity returns. The tab regaining focus or the OS reporting
+    // 'online' also calls forceReconnect() directly for an instant retry,
+    // this loop is the fallback for staying foregrounded through an outage.
     this.onStatusChange('reconnecting');
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), MAX_BACKOFF);
@@ -282,7 +278,7 @@ export class TerminalWSClient {
     // Notify UI of reconnect progress
     this.options.onReconnectProgress?.({
       attempt: this.reconnectAttempts,
-      maxAttempts: MAX_RECONNECT_ATTEMPTS,
+      maxAttempts: Infinity,
       nextRetryMs: delay,
     });
 
